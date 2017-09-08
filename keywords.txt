@@ -1,0 +1,96 @@
+#######################################
+# Syntax Coloring Map For Controleo3
+#######################################
+
+#######################################
+# Datatypes (KEYWORD1)
+#######################################
+
+Controleo3	KEYWORD1
+Controleo3Touch	KEYWORD1
+Controleo3LCD	KEYWORD1
+Controleo3Flash	KEYWORD1
+Controleo3MAX31856	KEYWORD1
+
+
+#######################################
+# Methods and Functions (KEYWORD2)
+#######################################
+
+# Controleo3Touch
+begin	KEYWORD2
+calibrate	KEYWORD2
+read	KEYWORD2
+readRaw	KEYWORD2
+isPressed	KEYWORD2
+
+# Controleo3LCD
+begin	KEYWORD2
+drawPixel	KEYWORD2
+drawFastHLine	KEYWORD2
+drawFastVLine	KEYWORD2
+drawRect	KEYWORD2
+fillRect	KEYWORD2
+fillScreen	KEYWORD2
+reset	KEYWORD2
+startBitmap	KEYWORD2
+endBitmap	KEYWORD2
+drawBitmap	KEYWORD2
+startReadBitmap	KEYWORD2
+readBitmapRGB565	KEYWORD2
+readBitmap24bit	KEYWORD2
+endReadBitmap	KEYWORD2
+pokeRegister	KEYWORD2
+setRegister8	KEYWORD2
+getLCDVersion	KEYWORD2
+convertTo16Bit	KEYWORD2
+
+# Controleo3Flash
+begin	KEYWORD2
+verifyFlashIC	KEYWORD2
+waitUntilNotBusy	KEYWORD2
+protectFlash	KEYWORD2
+eraseFlash	KEYWORD2
+startRead	KEYWORD2
+continueRead	KEYWORD2
+slowRead	KEYWORD2
+slowWrite	KEYWORD2
+dumpStatusRegisters	KEYWORD2
+readUniqueID	KEYWORD2
+factoryReset	KEYWORD2
+erasePrefsBlock	KEYWORD2
+eraseProfileBlock	KEYWORD2
+allowWritingToPrefs	KEYWORD2
+getBitmapPage	KEYWORD2
+getBitmapInfo	KEYWORD2
+
+# Controleo3MAX31856
+begin	KEYWORD2
+writeRegister	KEYWORD2
+readThermocouple	KEYWORD2
+readJunction	KEYWORD2
+
+
+#######################################
+# Constants (LITERAL1)
+#######################################
+ON	LITERAL1
+OFF	LITERAL1
+LCD_WIDTH	LITERAL1
+LCD_HEIGHT	LITERAL1
+LCD_MAX_X	LITERAL1
+LCD_MAX_Y	LITERAL1
+BUZZER_PIN	LITERAL1
+SD_DETECT_PIN	LITERAL1
+HARD_RESET	LITERAL1
+SOFT_RESET	LITERAL1
+BLACK	LITERAL1
+WHITE	LITERAL1
+BLUE	LITERAL1
+CELSIUS	LITERAL1
+FAHRENHEIT	LITERAL1
+FAULT_OPEN	LITERAL1
+FAULT_VOLTAGE	LITERAL1
+NO_MAX31856	LITERAL1
+IS_MAX31856_ERROR	LITERAL1
+
