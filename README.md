@@ -2,15 +2,15 @@ Controleo3 Reflow Oven Controller
 =================================
 
 Reflow oven build guide:  
-[http://www.whizoo.com/reflowoven]
+http://www.whizoo.com/reflowoven
 
 Buying Controleo3:  
-[http://www.whizoo.com/buy]
+http://www.whizoo.com/buy
 
 Updating the firmware running on Controleo3:  
-[http://www.whizoo.com/update]
+http://www.whizoo.com/update
 
-#### This is the GitHub source code repository for Controleo3.
+### This is the GitHub source code repository for Controleo3.
 
 This software has been released under the CC BY-NC-SA 3.0 license.  You are free
 To use it any way you wish.
@@ -32,7 +32,7 @@ Reflow Wizard
   * Added message when SD card wasn't FAT formatted
   * Profile commands: added "beep" and ability to specify just how much the oven door should open
 
-Peter Easton 2017
+Peter Easton 2017  
 whizoo.com
 
 
