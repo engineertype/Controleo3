@@ -1,16 +1,13 @@
 Controleo3 Reflow Oven Controller
 =================================
 
-Reflow oven build guide:
-
+Reflow oven build guide:  
 [http://www.whizoo.com/reflowoven]
 
-Buying Controleo3:
-
+Buying Controleo3:  
 [http://www.whizoo.com/buy]
 
-Updating the firmware running on Controleo3:
-
+Updating the firmware running on Controleo3:  
 [http://www.whizoo.com/update]
 
 #### This is the GitHub source code repository for Controleo3.
@@ -23,14 +20,13 @@ In this folder are:
 2. Files that comprise the Controleo3 library for Arduino
 3. An "examples” folder containing the Reflow Wizard software
 
-To install the Controleo3 library, please refer to:
-
+To install the Controleo3 library, please refer to:  
 http://arduino.cc/en/Guide/Libraries or http://www.whizoo.com/update
 
 Reflow Wizard
 =============
-1.0  Initial public release. (21 August 2017)
-1.1  Bug fixes and features (9 September 2017)
+* 1.0  Initial public release. (21 August 2017)  
+* 1.1  Bug fixes and features (9 September 2017)
   * Fixed bug where servo movement would be erratic
   * Fixed bug where running learning twice could cause the oven to overheat
   * Added message when SD card wasn't FAT formatted
