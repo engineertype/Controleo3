@@ -31,6 +31,9 @@ Reflow Wizard
   * Fixed bug where running learning twice could cause the oven to overheat
   * Added message when SD card wasn't FAT formatted
   * Profile commands: added "beep" and ability to specify just how much the oven door should open
+* 1.2  Tweaks for ovens with slow-response heating elements (1 November 2017)
+  * More responsiveness for all ovens, especially those with slow-response heating elements
+  * Minor oven scoring change to better reflect reality
 
 Peter Easton 2017  
 whizoo.com
