@@ -378,7 +378,6 @@ void Controleo3LCD::endReadBitmap()
 // Read 8-bits of data from the screen
 uint8_t Controleo3LCD::read8Data()
 {
-    uint8_t d;
     // Toggle the read bit
     LCD_RD_ACTIVE;
     LCD_RD_IDLE;

@@ -81,15 +81,16 @@ void showHelp(uint8_t screen)
       break;
 
     case SCREEN_RESET:
-      drawHelpBorder(445, HELP_BOX_HEIGHT(5));
+      drawHelpBorder(445, HELP_BOX_HEIGHT(6));
       displayHelpLine((char *) "A factory reset will erase all");
       displayHelpLine((char *) "settings, and return them to"); 
-      displayHelpLine((char *) "their default values.");
+      displayHelpLine((char *) "their default values.  Stored");
+      displayHelpLine((char *) "reflow profiles are also erased.");
       displayHelpLine((char *) "You can recalibrate the touchscreen"); 
       displayHelpLine((char *) "if you feel it isn't accurate."); 
       getTap(SHOW_TEMPERATURE_IN_HEADER);
       // Clear the area used by Help.  The screen will need to be redrawn
-      eraseHelpScreen(445, HELP_BOX_HEIGHT(5));
+      eraseHelpScreen(445, HELP_BOX_HEIGHT(6));
       break;
 
     case SCREEN_STATS:

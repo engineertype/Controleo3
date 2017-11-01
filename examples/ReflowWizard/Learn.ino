@@ -672,7 +672,7 @@ uint8_t ovenScore()
 
   // The remaining 20% is allocated towards insulation
   // A well-insulated oven will lose 30C in just over 2 minutes, and a poorly insulated one in 80 seconds
-  score += map(constrain(prefs.learnedInsulation, 80, 140), 80, 140, 0, 20);
+  score += map(constrain(prefs.learnedInsulation, 80, 130), 80, 130, 0, 20);
 
   // And that is the oven score!
   return score;
@@ -696,7 +696,7 @@ void showLearnedNumbers()
   sprintf(buffer100Bytes, "Inertia: %ds ", prefs.learnedInertia[0]);
   offset = displayString(10, LINE(1), FONT_9PT_BLACK_ON_WHITE, buffer100Bytes) + 10;
   // Show the emoticon that corresponds to the inertia
-  renderBitmap(prefs.learnedInertia[0] < 45? BITMAP_SMILEY_GOOD : prefs.learnedInertia[0] < 55? BITMAP_SMILEY_NEUTRAL: BITMAP_SMILEY_BAD, offset, LINE(1)-3);
+  renderBitmap(prefs.learnedInertia[0] < 46? BITMAP_SMILEY_GOOD : prefs.learnedInertia[0] < 56? BITMAP_SMILEY_NEUTRAL: BITMAP_SMILEY_BAD, offset, LINE(1)-3);
   // Add the width of the emoticon, plus some space
   offset += 40;
   sprintf(buffer100Bytes, "(bottom %ds, top %ds)", prefs.learnedInertia[1], prefs.learnedInertia[2]);

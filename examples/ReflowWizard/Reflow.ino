@@ -389,6 +389,9 @@ userChangedMindAboutAborting:
             tft.fillRect(150, 242, 180, 36, WHITE);
             drawButton(110, 230, 260, 93, BUTTON_LARGE_FONT, (char *) "DONE");
             reflowPhase = REFLOW_ALL_DONE;
+            // One more reflow completed!
+            prefs.numReflows++;
+            savePrefs();
         }
         break;
         
@@ -486,9 +489,9 @@ userChangedMindAboutAborting:
         //   sound like much (and it isn't) but heating elements are slow to heat up and cool down, so this is reasonable.
         // Ki = 0.01. This is a very small number.  It basically says that if we're under-temperature for a very long time then
         //   increase the power to the elements a tiny amount.  Having this any higher will create oscillations.
-        // Kd is based on the learned inertia value and for the typical reflow oven it should be around 25.  Some resistive
+        // Kd is based on the learned inertia value and for the typical reflow oven it should be around 35.  Some resistive
         //   elements take a very long time to heat up and cool down so this will be a much higher value.
-        Kd = map(constrain(prefs.learnedInertia[TYPE_WHOLE_OVEN], 30, 120), 30, 120, 25, 50);
+        Kd = map(constrain(prefs.learnedInertia[TYPE_WHOLE_OVEN], 30, 80), 30, 80, 30, 60);
         // Dump these values out over USB for debugging
         SerialUSB.println("T="+String(currentTemperature)+" P="+String(pidTemperature)+" D="+String(pidTemperatureDelta)+" E="+String(thisError)+" I="+String(pidIntegral)+" D="+String(pidDerivative)+" Kd="+String(Kd));
 
@@ -500,8 +503,8 @@ userChangedMindAboutAborting:
 
         // The base power we calculated first should be close to the required power, but allow the PID value to adjust
         // this up or down a bit.  The effect PID has on the outcome is deliberately limited because moving between zero
-        // (elements off) and 100 (full power) will create hot and cold spots.  PID can move the power by 55%; 30% down or 25% up.
-        thisError = constrain(thisError, -30, 25);
+        // (elements off) and 100 (full power) will create hot and cold spots.  PID can move the power by 60%; 30% down or up.
+        thisError = constrain(thisError, -30, 30);
         
         // Add the base power and the PID delta
         SerialUSB.println("Power was " + String(pidPower) + " and is now " + String(pidPower + thisError));
@@ -689,13 +692,13 @@ uint16_t getBasePIDPower(double temperature, double increment, uint16_t *bias, u
   temperature = constrain(temperature, 29, 250);
   // First, figure out the power required to maintain this temperature
   // Start by extrapolating the power using all elements at 120C
-  // 120C = 100%, 150C = 133%, 200C = 188%
-  basePower = (temperature - 29) * 1.1 * prefs.learnedPower[TYPE_WHOLE_OVEN] / 100;
+  // 120C = 100%, 150C = 125%, 200C = 166%
+  basePower = temperature * 0.83 * prefs.learnedPower[TYPE_WHOLE_OVEN] / 100;
   // Adjust this number slightly based on the expected losses through the insulation. Heat losses will be higher at high temperatures
   insulationPower = map(prefs.learnedInsulation, 0, 300, map(temperature, 0, 400, 0, 20), 0);
 
   // Adjust by the desired rate-of-rise
-  risePower = increment * (float) map(temperature, 0, 400, 5, 65);
+  risePower = increment * basePower * 2;
 
   // Adjust power by the bias, since some elements may receive less than the calculated power
   // Hope that the user hasn't made the boost element receive the most power - that isn't good.
