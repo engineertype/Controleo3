@@ -34,6 +34,10 @@ Reflow Wizard
 * 1.2  Tweaks for ovens with slow-response heating elements (1 November 2017)
   * More responsiveness for all ovens, especially those with slow-response heating elements
   * Minor oven scoring change to better reflect reality
+  * Number of reflows is now incremented as expected (Settings -> Stats)
+* 1.3  Added new profile command "maintain" (15 November 2017)
+  * The oven can now hold a specific temperature for a certain duration
+  * See http://www.whizoo.com/profiles for more information
 
 Peter Easton 2017  
 whizoo.com

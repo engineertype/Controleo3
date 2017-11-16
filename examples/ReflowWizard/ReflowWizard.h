@@ -3,7 +3,7 @@
 // Build a reflow oven: http://whizoo.com
 //
 
-#define CONTROLEO3_VERSION             "v1.2"
+#define CONTROLEO3_VERSION             "v1.3"
 
 
 // Fonts
@@ -147,9 +147,10 @@ const char *longOutputDescription[NO_OF_TYPES] = {
 #define REFLOW_WAITING_FOR_TIME        1  // Waiting for a set time to pass
 #define REFLOW_WAITING_UNTIL_ABOVE     2  // Waiting until the oven temperature rises above a certain temperature
 #define REFLOW_WAITING_UNTIL_BELOW     3  // Waiting until the oven temperature drops below a certain temperature
-#define REFLOW_PID                     4  // Use PID to get to the specified temperature
-#define REFLOW_ALL_DONE                5  // All done, waiting for user to tap screen
-#define REFLOW_ABORT                   6  // Abort (or done)
+#define REFLOW_MAINTAIN_TEMP           4  // Hold a specific temperature for a certain duration 
+#define REFLOW_PID                     5  // Use PID to get to the specified temperature
+#define REFLOW_ALL_DONE                6  // All done, waiting for user to tap screen
+#define REFLOW_ABORT                   7  // Abort (or done)
 
 
 // Baking Defines
@@ -233,8 +234,9 @@ struct profiles {
 #define TOKEN_PLAY_DONE_TUNE         23   // Play a tune to let the user things are done
 #define TOKEN_PLAY_BEEP              24   // Play a beep
 #define TOKEN_OVEN_DOOR_PERCENT      25   // Open the oven door a certain percentage
+#define TOKEN_MAINTAIN_TEMP          26   // Maintain a specific temperature for a certain duration
 
-#define NUM_TOKENS                   26   // Number of tokens to look for in the profile file on the SD card
+#define NUM_TOKENS                   27   // Number of tokens to look for in the profile file on the SD card
 #define TOKEN_NEXT_FLASH_BLOCK     0xFE   // Profile continues in next flash block 
 #define TOKEN_END_OF_PROFILE       0xFF   // Safety measure.  Flash is initialized to 0xFF, so this token means end-of-profile 
 

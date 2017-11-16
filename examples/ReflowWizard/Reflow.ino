@@ -336,6 +336,22 @@ userChangedMindAboutAborting:
             updateStatusMessage(token, 0, desiredTemperature);
             break;
 
+          case TOKEN_MAINTAIN_TEMP:
+            // Save the parameters
+            pidTemperature = numbers[0];
+            countdownTimer = numbers[1] > 0? numbers[1] : 1;
+            updateStatusMessage(token, countdownTimer, pidTemperature);
+            desiredTemperature = pidTemperature;
+
+            reflowPhase = REFLOW_MAINTAIN_TEMP;
+            // The temperature control is now done using PID
+            isPID = true;
+            pidTemperatureDelta = 0;
+            // Initialize the PID variables
+            pidPreviousError = 0;
+            pidIntegral = 0;
+            break;
+
           case TOKEN_CONVECTION_FAN_ON:
             // Turn on the convection fan
             turnConvectionFanOn(true);
@@ -401,7 +417,7 @@ userChangedMindAboutAborting:
           break;
 
         // Update the time left
-        updateStatusMessage(TOKEN_WAIT_FOR_SECONDS, countdownTimer, 0);
+        updateStatusMessage(token, countdownTimer, 0);
         // We were waiting for a certain period of time.  Have we waited long enough?
         if (countdownTimer == 0) {
           SerialUSB.println("Finished waiting");
@@ -442,6 +458,36 @@ userChangedMindAboutAborting:
         }
         break;
 
+      case REFLOW_MAINTAIN_TEMP:
+        // Make changes every second
+        if (!isOneSecondInterval)
+          break;
+
+        // We were waiting for a certain period of time.  Have we waited long enough?
+        if (countdownTimer == 0) {
+          SerialUSB.println("Finished maintaining temperature");
+          // Erase the status
+          updateStatusMessage(NOT_A_TOKEN, 0, 0);
+          // Get the next command
+          reflowPhase = REFLOW_PHASE_NEXT_COMMAND;
+          break;
+        }
+
+        // Is the oven over the desired temperature?
+        if (currentTemperature >= desiredTemperature) {
+          // Turn all the elements off
+          currentDuty[TYPE_BOTTOM_ELEMENT] = 0;
+          currentDuty[TYPE_TOP_ELEMENT] = 0;
+          currentDuty[TYPE_BOOST_ELEMENT] = 0;
+          // Update the countdown timer
+          updateStatusMessage(token, countdownTimer, desiredTemperature);
+          // Reset the PID variables
+          pidIntegral = 0;
+          pidPreviousError = 0;
+          break;
+        }
+        // Intentional fall-through if under temperature ...
+
       case REFLOW_PID:
         // Make changes every second
         if (!isOneSecondInterval)
@@ -453,6 +499,7 @@ userChangedMindAboutAborting:
         if (currentTemperature > desiredTemperature) {
           // Erase the status
           updateStatusMessage(NOT_A_TOKEN, 0, 0);
+          // Get the next command
           reflowPhase = REFLOW_PHASE_NEXT_COMMAND;
           break;
         }
@@ -461,7 +508,7 @@ userChangedMindAboutAborting:
         pidTemperature += pidTemperatureDelta;
       
         // Abort if deviated too far from the required temperature
-        if (abs(pidTemperature - currentTemperature) > maxTemperatureDeviation) {
+        if (reflowPhase != REFLOW_MAINTAIN_TEMP && abs(pidTemperature - currentTemperature) > maxTemperatureDeviation) {
           // Open the oven door
           setServoPosition(prefs.servoOpenDegrees, 3000);
           SerialUSB.println("ERROR: temperature delta exceeds maximum allowed!");
@@ -525,7 +572,7 @@ userChangedMindAboutAborting:
         }
 
         // Update the countdown timer
-        updateStatusMessage(TOKEN_TEMPERATURE_TARGET, countdownTimer, desiredTemperature);
+        updateStatusMessage(token, countdownTimer, desiredTemperature);
         break;
 
       case REFLOW_ALL_DONE:
@@ -598,7 +645,7 @@ void updateStatusMessage(uint16_t token, uint16_t timer, uint16_t temperature)
 {
   uint16_t strLength;
   static uint8_t numberLength = 0;
-  
+
   // Erase the area where the status message is displayed
   if (token == NOT_A_TOKEN) {
     tft.fillRect(20, LINE(2), 459, 24, WHITE);
@@ -626,6 +673,15 @@ void updateStatusMessage(uint16_t token, uint16_t timer, uint16_t temperature)
 
     case TOKEN_TEMPERATURE_TARGET:
       sprintf(buffer100Bytes, "Ramping oven to %d~C ... ", temperature);
+      strLength = displayString(20, LINE(2), FONT_9PT_BLACK_ON_WHITE, buffer100Bytes);
+      sprintf(buffer100Bytes, "%d", timer);
+      if (numberLength == 0)
+        numberLength = strlen(buffer100Bytes);
+      displayFixedWidthString(20+strLength, LINE(2), buffer100Bytes, numberLength, FONT_9PT_BLACK_ON_WHITE_FIXED);
+      break;
+
+    case TOKEN_MAINTAIN_TEMP:
+      sprintf(buffer100Bytes, "Holding temperature at %d~C ... ", temperature);
       strLength = displayString(20, LINE(2), FONT_9PT_BLACK_ON_WHITE, buffer100Bytes);
       sprintf(buffer100Bytes, "%d", timer);
       if (numberLength == 0)

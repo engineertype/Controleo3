@@ -712,7 +712,7 @@ void showLearnedNumbers()
   displayString(10, LINE(3), FONT_9PT_BLACK_ON_WHITE, (char *) "Oven score: ");
   score = ovenScore();
   sprintf(buffer100Bytes, "%d%% = ", score);
-  strcat(buffer100Bytes, score >90? "Excellent": score>80? "Very good": score>70? "Good": score>60? "Marginal": "Your oven sucks!");
+  strcat(buffer100Bytes, score >90? "Excellent": score>80? "Very good": score>70? "Good": score>60? "Marginal": "Not that good");
   displayString(159, LINE(3), FONT_9PT_BLACK_ON_WHITE, buffer100Bytes);
 }
 

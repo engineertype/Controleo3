@@ -11,7 +11,7 @@ char *tokenString[NUM_TOKENS] = {(char *) "not_a_token", (char *) "name", (char 
                                  (char *) "open door", (char *) "close door", (char *) "bias", (char *) "convection fan on", (char *) "convection fan off",
                                  (char *) "cooling fan on", (char *) "cooling fan off", (char *) "ramp temperature", (char *) "element duty cycle",
                                  (char *) "wait for", (char *) "wait until above", (char *) "wait until below", (char *) "play tune", (char *) "play beep",
-                                 (char *) "door percentage"};
+                                 (char *) "door percentage", (char *) "maintain"};
 char *tokenPtr[NUM_TOKENS];
 
 // Scan the SD card, looking for profiles
@@ -196,6 +196,7 @@ void processFile(File file)
 
       case TOKEN_TEMPERATURE_TARGET:
       case TOKEN_OVEN_DOOR_PERCENT:
+      case TOKEN_MAINTAIN_TEMP:
         // These should be followed by 2 numbers
         if (!getNumberFromFile(file, &numbers[0])) {
           SerialUSB.println("Error getting number 1/2");
@@ -453,6 +454,9 @@ char *tokenToText(char *str, uint8_t token, uint16_t *numbers)
     case TOKEN_TEMPERATURE_TARGET:
       sprintf(str, "Ramp temperature to %dC in %d seconds", numbers[0], numbers[1]);
       break;
+    case TOKEN_MAINTAIN_TEMP:
+      sprintf(str, "Maintain %dC for %d seconds", numbers[0], numbers[1]);
+      break;
     case TOKEN_ELEMENT_DUTY_CYCLES:
       sprintf(str, "Element duty cycle %d/%d/%d", numbers[0], numbers[1], numbers[2]);
       break;
@@ -615,6 +619,7 @@ uint16_t getNextTokenFromFlash(char *str, uint16_t *num)
  
     case TOKEN_TEMPERATURE_TARGET:
     case TOKEN_OVEN_DOOR_PERCENT:
+    case TOKEN_MAINTAIN_TEMP:
       // This should be followed by 2 numbers
       memcpy(num, flashBuffer256Bytes + offset + 1, 4);
       offset += 5;
@@ -710,6 +715,7 @@ void dumpProfile(uint8_t profileNo)
  
       case TOKEN_TEMPERATURE_TARGET:
       case TOKEN_OVEN_DOOR_PERCENT:
+      case TOKEN_MAINTAIN_TEMP:
         // These should be followed by 2 numbers
         SerialUSB.println(tokenToText(buffer100Bytes, token, numbers));
         break;
