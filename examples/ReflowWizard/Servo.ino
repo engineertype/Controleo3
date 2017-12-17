@@ -30,7 +30,7 @@
 // =======
 // The above scheme souunds great, but CC1 was delayed by up to 1ms every now & then.  This resulted in very erratic 
 // servo behavior.  The work-around now is to wait inside the ISR for the duration of the servo pulse.  This is
-// an aweful thing to do; ISR's should always to the absolute minimum and then return.  However, servo movement
+// an awful thing to do; ISR's should always do the absolute minimum and then return.  However, servo movement
 // is important and the delay is 2ms at most.  Nothing should be affected by this delay.  The touchscreen has
 // a dedicated controller so it won't be affected.
 

@@ -7,7 +7,7 @@
 #include <Controleo3.h> // Hardware-specific library
 #include "ReflowWizard.h"
 
-// Glabal temporary buffers (used everywhere)
+// Global temporary buffers (used everywhere)
 char buffer100Bytes[100];
 uint8_t flashBuffer256Bytes[256];     // Read/write from flash.  This is the size of a flash block
 

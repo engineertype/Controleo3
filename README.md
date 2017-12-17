@@ -38,6 +38,9 @@ Reflow Wizard
 * 1.3  Added new profile command "maintain" (15 November 2017)
   * The oven can now hold a specific temperature for a certain duration
   * See http://www.whizoo.com/profiles for more information
+* 1.4  Minor improvement (18 December 2017)
+  * When switching between non-FAT and FAT16/FAT32 formatted cards, a reboot was needed.  This has been fixed.
+  * Added comments and fixed spelling mistakes in the source code
 
 Peter Easton 2017  
 whizoo.com

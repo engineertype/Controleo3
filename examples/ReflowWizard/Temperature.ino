@@ -117,6 +117,8 @@ float getCurrentTemperature() {
 
   // The temperature might be updated by the ISR while reading the value.  Take
   // the reading twice to make sure the right value was obtained.
+  // Now that "Plan B" is in place (see Servo) we could disable interrupts while
+  // taking a reading - but this works so why change it?
   do {
     temperature = MAX31856temperature;
     temperature2 = MAX31856temperature;

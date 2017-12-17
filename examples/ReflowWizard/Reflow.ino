@@ -260,13 +260,13 @@ userChangedMindAboutAborting:
             break;
           
           case TOKEN_OVEN_DOOR_OPEN:
-            // Open the oven door
+            // Open the oven door over X seconds
             numbers[0] = numbers[0] < 30? numbers[0]: 30;
             setServoPosition(prefs.servoOpenDegrees, numbers[0] * 1000);
             break;
             
           case TOKEN_OVEN_DOOR_CLOSE:
-            // Close the oven door
+            // Close the oven door over X seconds
             numbers[0] = numbers[0] < 30? numbers[0]: 30;
             setServoPosition(prefs.servoClosedDegrees, numbers[0] * 1000);
             break;

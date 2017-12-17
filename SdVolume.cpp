@@ -248,6 +248,7 @@ uint8_t SdVolume::init(Sd2Card* dev, uint8_t part) {
     bpb->reservedSectorCount == 0 ||
     bpb->sectorsPerCluster == 0) {
        // not valid FAT volume
+      cacheBlockNumber_ = -1;
       return false;
   }
   fatCount_ = bpb->fatCount;

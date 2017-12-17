@@ -202,6 +202,7 @@ restart:
 }
 
 
+// Draw the calibration crosshairs on the screen
 void drawCrosshairs(uint16_t x, uint16_t y, boolean draw)
 {
   tft.fillRect(x-1, y-20, 3, 41, draw? BLUE: WHITE);
@@ -273,9 +274,9 @@ void calibrationDebounce()
 }
 
 
+// Send the calibration data to the touch driver
 void sendTouchCalibrationData()
 {
-    // Send the calibration data to the touch driver
     touch.calibrate(prefs.topLeftX,prefs.topRightX,prefs.bottomLeftX,prefs.bottomRightX,prefs.topLeftY,prefs.bottomLeftY,prefs.topRightY,prefs.bottomRightY);
 }
 

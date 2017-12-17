@@ -101,6 +101,7 @@ void setOutput(uint8_t outputNumber, boolean state) {
 }
 
 
+// Get the current state of an output
 boolean getOutput(uint8_t outputNumber)
 {
   // Make sure it is a valid output

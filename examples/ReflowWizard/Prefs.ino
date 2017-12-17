@@ -81,6 +81,7 @@ void getPrefs()
 }
 
 
+// Save the prefs to external flash
 void savePrefs()
 {
   // Don't write prefs immediately.  Wait a short time in case the user is moving quickly between items

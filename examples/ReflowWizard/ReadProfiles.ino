@@ -27,6 +27,7 @@ void ReadProfilesFromSDCard()
   // Try initializing twice.  Necessary if good card follows bad one
   if (!SD.begin() && !SD.begin()) {
     SerialUSB.println((char *) "Card failed, or not present");
+    SerialUSB.println((char *) "Error! Is SD card FAT16 or FAT32?");
     tft.fillRect(20, 120, 440, 40, WHITE);
     displayString(24, 120, FONT_9PT_BLACK_ON_WHITE, (char *) "Error! Is SD card FAT16 or FAT32?");
     uint32_t start = millis();

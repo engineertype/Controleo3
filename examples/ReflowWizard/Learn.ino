@@ -621,7 +621,8 @@ void displaySecondsLeft(uint32_t overallSeconds, uint32_t phaseSeconds)
 #define PERFORMANCE_BAD               0xF082  // (tft.convertTo16Bit(0xF01111))
 #define PERFORMANCE_OKAY              0x09BF  // (tft.convertTo16Bit(0x0D35F9))
 #define PERFORMANCE_GOOD              0x5F0B  // (tft.convertTo16Bit(0x5EE05F))
-// 
+
+// Draw the performance graph to indicate instantaneous performance
 void drawPerformanceBar(boolean redraw, uint8_t percentage)
 {
   static uint16_t lastStatusX = 0;
@@ -679,6 +680,7 @@ uint8_t ovenScore()
 }
 
 
+// The learned numbers are shown once the oven has completed the 1-hour learning run
 void showLearnedNumbers()
 {
   uint16_t score, offset;
