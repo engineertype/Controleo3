@@ -2,12 +2,13 @@
 // Released under CC BY-NC-SA 3.0 license
 // Build a reflow oven: http://whizoo.com
 //
+float timeAboveTemperature = 0;
 
 // Perform a reflow
 // Stay in this function until the bake is done or canceled
 void reflow(uint8_t profileNo)
 {
-  uint32_t reflowTimer = 0, countdownTimer = 0, lastLoopTime = millis();
+  uint32_t reflowTimer = 0, timeAboveTimer = 0, countdownTimer = 0, lastLoopTime = millis();
   uint8_t counter = 0;
   uint8_t reflowPhase = REFLOW_PHASE_NEXT_COMMAND;
   double currentTemperature = 0, peakTemperature = 0, pidTemperatureDelta = 0, pidTemperature = 0;
@@ -61,6 +62,13 @@ void reflow(uint8_t profileNo)
   if (getNextTokenFromFlash(0, &prefs.profile[profileNo].startBlock) == TOKEN_END_OF_PROFILE)
     return;
 
+  //default the time-above temperature to the peak temperature stored on the profile
+  //(can be overriden by a "Time above" command when that command is created later)
+  timeAboveTemperature = prefs.profile[profileNo].peakTemperature;
+  SerialUSB.print("The highest temperature in the profile is ");
+  SerialUSB.print(prefs.profile[profileNo].peakTemperature);
+  SerialUSB.println("C");
+
   // Set up the screen in preparation for reflow
   // Erase the bottom part of the screen
   tft.fillRect(0, 100, LCD_WIDTH, 220, WHITE);
@@ -80,6 +88,17 @@ userChangedMindAboutAborting:
 
   // Display the status (if waiting)
   updateStatusMessage(token, countdownTimer, desiredTemperature);
+
+  // Show the "peak" title
+  showPeakTitle();
+
+  // Show the time-above title text
+  if(timeAboveTemperature > 0 ) {
+    showTimeAboveTitle(displayInCelcius());  
+    displayTimeAbove(timeAboveTimer);
+    // Toggle the time-above temperature display between C/F if the user taps in the top-right corner
+    setTouchTemperatureUnitChangeCallback(showTimeAboveTitle); 
+  }
   
   // Debounce any taps that took us to this screen
   debounce();
@@ -114,7 +133,7 @@ userChangedMindAboutAborting:
       case 1:
         // This is the cancel button of the Abort dialog.  User wants to continue
         // Erase the Abort dialog
-        tft.fillRect(0, 90, 480, 230, WHITE);
+        tft.fillRect(0, 110, 480, 210, WHITE);
         abortDialogIsOnScreen = false;
         counter = 0;
         // Redraw the screen under the dialog
@@ -132,6 +151,9 @@ userChangedMindAboutAborting:
     // Update the reflow timer
     if (counter == 0 && !abortDialogIsOnScreen)
       displayReflowDuration(reflowTimer);
+    // Update the time-above timer
+    if (counter == 1 && !abortDialogIsOnScreen && timeAboveTemperature > 0)
+      displayTimeAbove(timeAboveTimer);
     // Update the temperature
     if (counter == 2)
       displayTemperatureInHeader();
@@ -144,8 +166,8 @@ userChangedMindAboutAborting:
       sprintf(buffer100Bytes, "%u, %d.%02d, %i, %i, %i", reflowTimer, (uint16_t) currentTemperature, fraction, currentDuty[TYPE_BOTTOM_ELEMENT], currentDuty[TYPE_TOP_ELEMENT], currentDuty[TYPE_BOOST_ELEMENT]);
       SerialUSB.println(buffer100Bytes);      
     }
-    // Display peak temperature under current temp
-    if (counter == 10)
+    // Display peak temperature 
+    if (counter == 10 && !abortDialogIsOnScreen)
       displayPeakTemp(peakTemperature);
 
     // Determine if this is on a 1-second interval
@@ -157,6 +179,8 @@ userChangedMindAboutAborting:
         countdownTimer--;
       if (incrementTimer && reflowPhase < REFLOW_ALL_DONE)
         reflowTimer++;
+      if(timeAboveTemperature > 0 && currentTemperature > timeAboveTemperature) 
+        timeAboveTimer++;
     }
     
     // Read the current temperature
@@ -658,11 +682,11 @@ userChangedMindAboutAborting:
 // Draw the abort dialog on the screen.  The user needs to confirm that they want to exit reflow
 void drawReflowAbortDialog()
 {
-  drawThickRectangle(0, 90, 480, 230, 15, RED);
-  tft.fillRect(15, 105, 450, 200, WHITE);
-  displayString(135, 110, FONT_12PT_BLACK_ON_WHITE, (char *) "Stop Reflow");
-  displayString(62, 150, FONT_9PT_BLACK_ON_WHITE, (char *) "Are you sure you want to stop");
-  displayString(62, 180, FONT_9PT_BLACK_ON_WHITE, (char *) "the reflow?");
+  drawThickRectangle(0, 110, 480, 210, 15, RED);
+  tft.fillRect(15, 125, 450, 180, WHITE);
+  displayString(135, 130, FONT_12PT_BLACK_ON_WHITE, (char *) "Stop Reflow");
+  displayString(62, 165, FONT_9PT_BLACK_ON_WHITE, (char *) "Are you sure you want to stop");
+  displayString(62, 195, FONT_9PT_BLACK_ON_WHITE, (char *) "the reflow?");
   clearTouchTargets();
   drawTouchButton(60, 230, 160, 72, BUTTON_LARGE_FONT, (char *) "Stop");
   drawTouchButton(260, 230, 160, 105, BUTTON_LARGE_FONT, (char *) "Cancel");
@@ -754,18 +778,51 @@ void displayReflowDuration(uint32_t seconds)
   static uint16_t oldWidth = 1, timerX = 130;
 
   // Update the clock display
-  uint16_t newWidth = displayString(timerX, 160, FONT_22PT_BLACK_ON_WHITE_FIXED, secondsInClockFormat(buffer100Bytes, seconds));
+  uint16_t newWidth = displayString(timerX, 140, FONT_22PT_BLACK_ON_WHITE_FIXED, secondsInClockFormat(buffer100Bytes, seconds));
   // Keep the timer display centered
   if (newWidth != oldWidth) {
     // The width has changed (one more character on the display).  Erase what was there
-    tft.fillRect(timerX, 160, newWidth > oldWidth? newWidth : oldWidth, 48, WHITE);
+    tft.fillRect(timerX, 140, newWidth > oldWidth? newWidth : oldWidth, 48, WHITE);
     // Redraw the timer
     oldWidth = newWidth;
     timerX = 240 - (newWidth >> 1);
-    displayString(timerX, 160, FONT_22PT_BLACK_ON_WHITE_FIXED, buffer100Bytes);
+    displayString(timerX, 140, FONT_22PT_BLACK_ON_WHITE_FIXED, buffer100Bytes);
   }
 }
 
+// Display the time-above timer
+void displayTimeAbove(uint32_t seconds)
+{
+  static uint16_t oldWidth = 1, timerX = 422;
+
+  // Update the clock display
+  uint16_t newWidth = displayString(timerX, LINE(5), FONT_9PT_BLACK_ON_WHITE_FIXED, secondsInClockFormat(buffer100Bytes, seconds));
+  // This one is left-aligned, so don't need to change x position
+  if (newWidth != oldWidth) {
+    // The width has changed (wider or maybe it got reset to zero).  Erase what was there
+    tft.fillRect(timerX, LINE(5), newWidth > oldWidth? newWidth : oldWidth, 30, WHITE);
+    // Redraw the timer
+    oldWidth = newWidth;
+    displayString(timerX, LINE(5), FONT_9PT_BLACK_ON_WHITE_FIXED, buffer100Bytes);
+  }
+}
+//show the title that applies to the time-above measurement (assume the temperature is 3 digits or less)
+//this is used as the callback when temperature units are changed. 
+void showTimeAboveTitle(bool displayCelcius) {
+  tft.fillRect(196, LINE(5), 226, 30, WHITE);
+  if(timeAboveTemperature > 0) {
+    if(displayCelcius) {
+      sprintf(buffer100Bytes, "Time above %d~C:", (int)timeAboveTemperature);
+    } else {
+      sprintf(buffer100Bytes, "Time above %d~F:", (int)(timeAboveTemperature*9/5)+32);
+    }
+    displayString(196, LINE(5), FONT_9PT_BLACK_ON_WHITE, buffer100Bytes);
+  }
+}
+//show the title that applies to the peak measurement 
+void showPeakTitle() {
+  displayString(20, LINE(5), FONT_9PT_BLACK_ON_WHITE, "Peak");
+}
 
 // Calculate the expected power level based on the desired temperature and desired rate-of-rise
 uint16_t getBasePIDPower(double temperature, double increment, uint16_t *bias, uint16_t maxBias)

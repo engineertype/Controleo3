@@ -55,7 +55,7 @@ userChangedMindAboutAborting:
   setTouchTemperatureUnitChangeCallback(displayBakeTemperatureAndDuration);
 
   // Display baking information to the screen and for debugging
-  displayBakeTemperatureAndDuration(true);
+  displayBakeTemperatureAndDuration(displayInCelcius());
   SerialUSB.println(buffer100Bytes);
 
   // Display the bake phase on the screen

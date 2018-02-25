@@ -448,18 +448,19 @@ void displayTemperatureInHeader()
   }
 }
 
-// Reflow will display the peak temp just under the current temp
+// Reflow will display the peak temp just above the 'stop' button
 void displayPeakTemp(float temperature)
 {
   char *str = getTemperatureString(buffer100Bytes, temperature, touchDisplayInCelsius);
 
-  // Display the temperature
-  if (IS_MAX31856_ERROR(temperature)) {
-    tft.fillRect(366, LINE(0), 110, 19, WHITE);
-    displayString(418, LINE(0), FONT_9PT_BLACK_ON_WHITE_FIXED, str);
+  // Display the temperature (don't really expect to get errors here)
+  if (!IS_MAX31856_ERROR(temperature)) {
+    displayFixedWidthString(80, LINE(5), str, 8, FONT_9PT_BLACK_ON_WHITE_FIXED);
   }
-  else {
-    displayFixedWidthString(366, LINE(0), str, 8, FONT_9PT_BLACK_ON_WHITE_FIXED);
-  }
+}
+
+//Allow reflow and bake functions to see the current display units setting
+bool displayInCelcius() {
+  return touchDisplayInCelsius;
 }
 
