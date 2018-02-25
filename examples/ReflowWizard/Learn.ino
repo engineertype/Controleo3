@@ -165,7 +165,8 @@ userChangedMindAboutAborting:
       }
     
       // Abort the bake
-      SerialUSB.println("Thermocouple error:" + String(buffer100Bytes));
+      SerialUSB.print("Thermocouple error:");
+      SerialUSB.println(buffer100Bytes);
       SerialUSB.println("Learning aborted because of thermocouple error!");
       // Show the error on the screen
       drawThickRectangle(0, 90, 480, 230, 15, RED);
@@ -302,12 +303,14 @@ userChangedMindAboutAborting:
             case TYPE_BOTTOM_ELEMENT:
               displayString(10, LINE(0), FONT_9PT_BLACK_ON_WHITE, (char *) "Keeping oven at 120~C using just the");
               displayString(10, LINE(1), FONT_9PT_BLACK_ON_WHITE, (char *) "bottom element ...");
+              SerialUSB.println("Constant temp, switching to bottom only");
               // The duty cycle for just the bottom element is probably twice the whole oven
               learningDutyCycle = (learningDutyCycle << 1) + 5;
               break;
             case TYPE_TOP_ELEMENT:
               displayString(10, LINE(0), FONT_9PT_BLACK_ON_WHITE, (char *) "Keeping oven at 120~C using just the");
               displayString(10, LINE(1), FONT_9PT_BLACK_ON_WHITE, (char *) "top element ...");
+              SerialUSB.println("Constant temp, switching to top only");
               // The duty cycle for just the top element is probably slightly higher then the bottom one
               learningDutyCycle = learningDutyCycle + 2;
               break;
@@ -316,6 +319,7 @@ userChangedMindAboutAborting:
               displayString(10, LINE(0), FONT_9PT_BLACK_ON_WHITE, (char *) "Measuring how quickly the oven gets");
               displayString(10, LINE(1), FONT_9PT_BLACK_ON_WHITE, (char *) "to 150~C using all elements at 80%");
               learningPhase = LEARNING_PHASE_THERMAL_INERTIA;
+              SerialUSB.println("learningPhase -> LEARNING_PHASE_THERMAL_INERTIA (whole oven)");
               currentlyMeasuring = TYPE_WHOLE_OVEN;
               secondsLeftOfPhase = LEARNING_INERTIA_DURATION;
               // Crank up the power to 80% to see the rate-of-rise
@@ -356,14 +360,16 @@ userChangedMindAboutAborting:
                 break;
               case TYPE_BOTTOM_ELEMENT:
                 // (120 seconds = excellent, 240 seconds = awful)
-                i = constrain(learningDutyCycle, 100, 240);
+                i = constrain(secondsIntoPhase, 100, 240);
                 drawPerformanceBar(false, map(i, 100, 240, 100, 0));
+                SerialUSB.println("Drawn performance bar on screen for bottom element");
                 break;
               case TYPE_TOP_ELEMENT:
                 // (60 seconds = excellent, 140 seconds = awful)
                 // Closer to thermocouple, heating less of the oven = less time needed
-                i = constrain(learningDutyCycle, 60, 140);
+                i = constrain(secondsIntoPhase, 60, 140);
                 drawPerformanceBar(false, map(i, 60, 140, 100, 0));
+                SerialUSB.println("Drawn performance bar on screen for top element");
                 break;
             }
             // Set the duty cycle at the value that will maintain soak temperature
@@ -377,6 +383,7 @@ userChangedMindAboutAborting:
             tft.fillRect(10, LINE(0), 465, 60, WHITE);
             displayString(10, LINE(0), FONT_9PT_BLACK_ON_WHITE, (char *) "Cooling oven back to 120~C and");
             displayString(10, LINE(1), FONT_9PT_BLACK_ON_WHITE, (char *) "measuring heat retention ...");
+            SerialUSB.println("Cooling back to 120C with all elements off");
           }
         }
 
@@ -386,8 +393,13 @@ userChangedMindAboutAborting:
           if (currentTemperature > LEARNING_INERTIA_TEMP)
             secondsIntoPhase = 0;
           // If the temperature has dropped below 120C then record the time it took
-          if (currentTemperature < LEARNING_SOAK_TEMP && prefs.learnedInsulation == 0 && currentlyMeasuring == TYPE_WHOLE_OVEN)
+          if (currentTemperature < LEARNING_SOAK_TEMP && !isHeating) {
+            SerialUSB.print("Sufficiently cooled, time taken was ");
+            SerialUSB.println(secondsIntoPhase);
+          }
+          if (currentTemperature < LEARNING_SOAK_TEMP && prefs.learnedInsulation == 0 && currentlyMeasuring == TYPE_WHOLE_OVEN) {
             prefs.learnedInsulation = secondsIntoPhase;
+          }
           // If we're done measuring everything then abort this phase early
           if (currentlyMeasuring == TYPE_TOP_ELEMENT) {
             secondsLeftOfLearning = 0;
@@ -406,6 +418,7 @@ userChangedMindAboutAborting:
             case TYPE_BOTTOM_ELEMENT:
               displayString(10, LINE(0), FONT_9PT_BLACK_ON_WHITE, (char *) "Measuring how quickly the oven gets");
               displayString(10, LINE(1), FONT_9PT_BLACK_ON_WHITE, (char *) "to 150~C using bottom element at 80%.");
+              SerialUSB.println("Thermal inertia, switching to bottom element at 80%");
               secondsLeftOfPhase = LEARNING_INERTIA_DURATION;
               learningDutyCycle = 80;
               break;
@@ -413,6 +426,7 @@ userChangedMindAboutAborting:
               // The top element is closer to the thermocouple, and is also close to the insulation so run it cooler
               displayString(10, LINE(0), FONT_9PT_BLACK_ON_WHITE, (char *) "Measuring how quickly the oven gets");
               displayString(10, LINE(1), FONT_9PT_BLACK_ON_WHITE, (char *) "to 150~C using the top element at 70%.");
+              SerialUSB.println("Thermal inertia, switching to top element at 70%");
               // No need to stabilize temperature at 120C at the end of this phase (so it has shorter duration)
               secondsLeftOfPhase = LEARNING_FINAL_INERTIA_DURATION;
               learningDutyCycle = 70;
@@ -424,6 +438,7 @@ userChangedMindAboutAborting:
               showLearnedNumbers();
               // Done with measuring the oven.  Start cooling
               learningPhase = LEARNING_PHASE_START_COOLING;
+              SerialUSB.println("learning finished, numbers printed to screen");
               secondsLeftOfPhase = 0;
               // Save all the learned values now
               prefs.learningComplete = true;
@@ -684,29 +699,38 @@ uint8_t ovenScore()
 void showLearnedNumbers()
 {
   uint16_t score, offset;
+  SerialUSB.println();
   // Display the power required to keep the oven at a stable temperature
   sprintf(buffer100Bytes, "Power: %d%% ", prefs.learnedPower[0]);
   offset = displayString(10, LINE(0), FONT_9PT_BLACK_ON_WHITE, buffer100Bytes) + 10;
+  SerialUSB.print(buffer100Bytes);
   // Show the emoticon that corresponds to the power
   renderBitmap(prefs.learnedPower[0] < 18? BITMAP_SMILEY_GOOD : prefs.learnedPower[0] < 24? BITMAP_SMILEY_NEUTRAL: BITMAP_SMILEY_BAD, offset, LINE(0)-3);
   // Add the width of the emoticon, plus some space
   offset += 40;
+  SerialUSB.print(" ");
   sprintf(buffer100Bytes, "(bottom %d%%, top %d%%)", prefs.learnedPower[1], prefs.learnedPower[2]);
   displayString(offset, LINE(0), FONT_9PT_BLACK_ON_WHITE, buffer100Bytes);
+  SerialUSB.println(buffer100Bytes);
+
 
   // Display the time needed to reach the higher temperatures (inertia)
   sprintf(buffer100Bytes, "Inertia: %ds ", prefs.learnedInertia[0]);
   offset = displayString(10, LINE(1), FONT_9PT_BLACK_ON_WHITE, buffer100Bytes) + 10;
+  SerialUSB.print(buffer100Bytes);
   // Show the emoticon that corresponds to the inertia
   renderBitmap(prefs.learnedInertia[0] < 46? BITMAP_SMILEY_GOOD : prefs.learnedInertia[0] < 56? BITMAP_SMILEY_NEUTRAL: BITMAP_SMILEY_BAD, offset, LINE(1)-3);
   // Add the width of the emoticon, plus some space
   offset += 40;
+  SerialUSB.print(" ");  
   sprintf(buffer100Bytes, "(bottom %ds, top %ds)", prefs.learnedInertia[1], prefs.learnedInertia[2]);
   displayString(offset, LINE(1), FONT_9PT_BLACK_ON_WHITE, buffer100Bytes);
+  SerialUSB.println(buffer100Bytes);
 
   // Display the insulation score
   sprintf(buffer100Bytes, "Insulation: %ds ", prefs.learnedInsulation);
   offset = displayString(10, LINE(2), FONT_9PT_BLACK_ON_WHITE, buffer100Bytes) + 10;
+  SerialUSB.println(buffer100Bytes);
   // Show the emoticon that corresponds to the insulation
   renderBitmap(prefs.learnedInsulation > 105? BITMAP_SMILEY_GOOD : prefs.learnedInsulation > 85? BITMAP_SMILEY_NEUTRAL: BITMAP_SMILEY_BAD, offset, LINE(2)-3);
 
@@ -716,5 +740,7 @@ void showLearnedNumbers()
   sprintf(buffer100Bytes, "%d%% = ", score);
   strcat(buffer100Bytes, score >90? "Excellent": score>80? "Very good": score>70? "Good": score>60? "Marginal": "Not that good");
   displayString(159, LINE(3), FONT_9PT_BLACK_ON_WHITE, buffer100Bytes);
+  SerialUSB.println(buffer100Bytes);
+  SerialUSB.println();
 }
 

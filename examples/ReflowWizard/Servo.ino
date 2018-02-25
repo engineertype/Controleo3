@@ -163,10 +163,16 @@ void TC3_Handler()
 
 
 // Move the servo to servoDegrees, in timeToTake milliseconds (1/1000 second)
+//Why should this clobber the 100-byte buffer? It's not necessary just for a debug print.
 void setServoPosition(uint8_t servoDegrees, uint16_t timeToTake) {
+  SerialUSB.print("Servo: move to ");
+  SerialUSB.print(servoDegrees);
+  SerialUSB.print(" degrees over ");
+  SerialUSB.print(timeToTake/1000);
+  SerialUSB.print(" sec");
+  SerialUSB.println();
+  
   TcCount16* TC = (TcCount16*) TC3;     // Get timer struct
-  sprintf(buffer100Bytes, "Servo: move to %d degrees, over %d ms", servoDegrees, timeToTake);
-  SerialUSB.println(buffer100Bytes);
   // Make sure the degrees are 0 - 180
   if (servoDegrees > 180)
     return;

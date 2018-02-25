@@ -57,7 +57,7 @@ void setup(void) {
   renderBitmap(BITMAP_CONTROLEO3, 40, 10);
   renderBitmap(BITMAP_WHIZOO, 84, 200);
   displayString(42, 85, FONT_12PT_BLACK_ON_WHITE, (char *) "Reflow Oven Controller");
-  displayString(420, 290, FONT_9PT_BLACK_ON_WHITE, (char *) CONTROLEO3_VERSION);
+  displayString(410, 290, FONT_9PT_BLACK_ON_WHITE, (char *) CONTROLEO3_VERSION);
   tft.pokeRegister(ILI9488_DISPLAYON);
   playTones(TUNE_STARTUP);
   SerialUSB.begin(115200);
@@ -133,7 +133,8 @@ void takeScreenshot()
     SerialUSB.println("Can't open " + String(buf));
     return;
   }
-  SerialUSB.println("Writing screenshot to " + String(buf));
+  SerialUSB.print("Writing screenshot to ");
+  SerialUSB.println(buf);
   
   // Write the bitmap header
   memcpy_P(buf, bmpHeader, 54);

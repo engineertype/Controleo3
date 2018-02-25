@@ -48,7 +48,7 @@ redraw:
         renderBitmap(BITMAP_SETTINGS, 285, 252);
 
         // Act on the tap
-        switch(getTap(DONT_SHOW_TEMPERATURE)) {
+        switch(getTap(SHOW_TEMPERATURE_IN_HEADER)) {
           case 0: screen = SCREEN_REFLOW; break;
           case 1: screen = SCREEN_BAKE; break;
           case 2: screen = SCREEN_SETTINGS; break;

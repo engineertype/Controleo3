@@ -64,7 +64,10 @@ void getPrefs()
     prefs.lastUsedProfileBlock = FIRST_PROFILE_BLOCK;
   }
 
-  SerialUSB.println("Read prefs from block " + String(prefsToUse) + ". Seq No = " + String(prefs.sequenceNumber));
+  SerialUSB.print("Read prefs from block ");
+  SerialUSB.print(prefsToUse);
+  SerialUSB.print(". Seq No = ");
+  SerialUSB.println(prefs.sequenceNumber);
 
 /* Defaults for oven in build guide
   prefs.learningComplete = true;
@@ -140,7 +143,10 @@ void writePrefsToFlash()
   // Protect flash again, now that writing is done
   flash.allowWritingToPrefs(false);
 
-  SerialUSB.println("Finished writing prefs to block " + String(lastPrefsBlock) + ". Seq No = " + String(prefs.sequenceNumber));
+  SerialUSB.print("Finished writing prefs to block ");
+  SerialUSB.print(lastPrefsBlock);
+  SerialUSB.print(". Seq No = ");
+  SerialUSB.println(prefs.sequenceNumber);
   timeOfLastSavePrefsRequest = 0;
 }
 

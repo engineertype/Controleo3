@@ -10,7 +10,7 @@ void reflow(uint8_t profileNo)
   uint32_t reflowTimer = 0, countdownTimer = 0, lastLoopTime = millis();
   uint8_t counter = 0;
   uint8_t reflowPhase = REFLOW_PHASE_NEXT_COMMAND;
-  double currentTemperature = 0, pidTemperatureDelta = 0, pidTemperature = 0;
+  double currentTemperature = 0, peakTemperature = 0, pidTemperatureDelta = 0, pidTemperature = 0;
   uint8_t elementDutyCounter[NUMBER_OF_OUTPUTS];
   boolean isOneSecondInterval = false;
   uint16_t iconsX, i, token = NOT_A_TOKEN, numbers[4], maxDuty[4], currentDuty[4], bias[4];
@@ -63,7 +63,12 @@ void reflow(uint8_t profileNo)
 
   // Set up the screen in preparation for reflow
   // Erase the bottom part of the screen
-  tft.fillRect(0, 100, 480, 220, WHITE);
+  tft.fillRect(0, 100, LCD_WIDTH, 220, WHITE);
+
+  //Send a header for the serial port numbers (elements in same order as specified in profiles)
+  SerialUSB.println();
+  SerialUSB.println("Time, Temperature C, Bottom Element, Top Element, Boost Element");
+
 
   // Ug, hate goto's!  But this saves a lot of extraneous code.
 userChangedMindAboutAborting:
@@ -134,8 +139,17 @@ userChangedMindAboutAborting:
     if (counter == 2)
       displayTemperatureInHeader();
     // Dump data to the debugging port
-    if (counter == 5 && reflowPhase != REFLOW_ALL_DONE)
-      DisplayBakeTime(reflowTimer, currentTemperature, 0, 0);
+    if (counter == 5 && reflowPhase != REFLOW_ALL_DONE){
+      // Write the time, temperature and 3 heating elements to the serial port, for graphing or analysis on a PC
+      //Show display order as bottom-top-boost (same as you use in a profile)
+      //Don't know why the original function used the 100-byte buffer but let's copy that method anyway...
+      uint16_t fraction = ((uint16_t) (currentTemperature * 100)) % 100;
+      sprintf(buffer100Bytes, "%u, %d.%02d, %i, %i, %i", reflowTimer, (uint16_t) currentTemperature, fraction, currentDuty[TYPE_BOTTOM_ELEMENT], currentDuty[TYPE_TOP_ELEMENT], currentDuty[TYPE_BOOST_ELEMENT]);
+      SerialUSB.println(buffer100Bytes);      
+    }
+    // Display peak temperature under current temp
+    if (counter == 10)
+      displayPeakTemp(peakTemperature);
 
     // Determine if this is on a 1-second interval
     isOneSecondInterval = false;
@@ -164,7 +178,8 @@ userChangedMindAboutAborting:
       }
     
       // Abort the reflow
-      SerialUSB.println("Thermocouple error:" + String(buffer100Bytes));
+      SerialUSB.print("Thermocouple error:");
+      SerialUSB.println(buffer100Bytes);
       SerialUSB.println("Reflow aborted because of thermocouple error!");
       showReflowError(iconsX, (char *) "Thermocouple error:", buffer100Bytes);
       reflowPhase = REFLOW_ABORT;
@@ -181,6 +196,11 @@ userChangedMindAboutAborting:
       showReflowError(iconsX, buffer100Bytes, (char *) "was exceeded.");
       reflowPhase = REFLOW_ABORT;      
     }
+
+    //store the peak temperature
+    if (currentTemperature > peakTemperature) 
+      peakTemperature = currentTemperature;
+    
 
     switch (reflowPhase) {
       case REFLOW_PHASE_NEXT_COMMAND:
@@ -506,6 +526,17 @@ userChangedMindAboutAborting:
         
         // Calculate what the expected temperature should be at this point
         pidTemperature += pidTemperatureDelta;
+
+        //If it didn't reach the desired temperature within the time allowed, 
+        //the original version would keep ramping the PID temperature above that target.
+        //No, we want to smoothly level off at that desired temperature
+        // - since we're currently here, we haven't reached that temperature so we are still heating
+        // - but a slow or poorly-insulated oven may never reach that target and stay 0.1 degree under for ever
+        // - But the base PID power is told the delta, so it knows to add more power above purely maintaining temperature
+        // - For now, let's give it 2 degrees (and the delta)
+        if (pidTemperature > desiredTemperature + 2)
+          pidTemperature = desiredTemperature + 2;
+        
       
         // Abort if deviated too far from the required temperature
         if (reflowPhase != REFLOW_MAINTAIN_TEMP && abs(pidTemperature - currentTemperature) > maxTemperatureDeviation) {
@@ -540,7 +571,7 @@ userChangedMindAboutAborting:
         //   elements take a very long time to heat up and cool down so this will be a much higher value.
         Kd = map(constrain(prefs.learnedInertia[TYPE_WHOLE_OVEN], 30, 80), 30, 80, 30, 60);
         // Dump these values out over USB for debugging
-        SerialUSB.println("T="+String(currentTemperature)+" P="+String(pidTemperature)+" D="+String(pidTemperatureDelta)+" E="+String(thisError)+" I="+String(pidIntegral)+" D="+String(pidDerivative)+" Kd="+String(Kd));
+        //SerialUSB.println("T="+String(currentTemperature)+" P="+String(pidTemperature)+" D="+String(pidTemperatureDelta)+" E="+String(thisError)+" I="+String(pidIntegral)+" D="+String(pidDerivative)+" Kd="+String(Kd));
 
         // If we're over-temperature, it is best to slow things down even more since taking a bit longer in a phase is better than taking less time
         if (thisError < 0)
@@ -554,7 +585,7 @@ userChangedMindAboutAborting:
         thisError = constrain(thisError, -30, 30);
         
         // Add the base power and the PID delta
-        SerialUSB.println("Power was " + String(pidPower) + " and is now " + String(pidPower + thisError));
+        //SerialUSB.println("Power was " + String(pidPower) + " and is now " + String(pidPower + thisError));
         pidPower += (thisError);
 
         // Make sure the resulting power is reasonable
@@ -774,7 +805,7 @@ uint16_t getBasePIDPower(double temperature, double increment, uint16_t *bias, u
   biasFactor = (float) 2 * maxBias / (bias[TYPE_BOTTOM_ELEMENT] + bias[TYPE_TOP_ELEMENT]);
 
   totalBasePower = basePower + insulationPower + risePower;
-  SerialUSB.println("Base PID power at "+String(temperature)+"C:  B="+String(basePower)+" I="+String(insulationPower)+" R="+String(risePower)+" Total="+String(totalBasePower)+" bias="+String(biasFactor));
+  //SerialUSB.println("Base PID power at "+String(temperature)+"C:  B="+String(basePower)+" I="+String(insulationPower)+" R="+String(risePower)+" Total="+String(totalBasePower)+" bias="+String(biasFactor));
 
   // Put it all together
   totalBasePower = totalBasePower * biasFactor;

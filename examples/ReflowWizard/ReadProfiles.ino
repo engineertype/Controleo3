@@ -94,7 +94,8 @@ void processFile(File file)
     return;
 
   // Looks like this is a valid profile file
-  SerialUSB.println("Processing file: " + String(file.name()));
+  SerialUSB.print("Processing file: ");
+  SerialUSB.println(file.name());
 
   // Reset the token search
   initTokenPtrs();
@@ -398,7 +399,8 @@ boolean getNumberFromFile(File file, uint16_t *num)
   
   // We've reached the end of the file
   if (digitFound) {
-      SerialUSB.println("Found number " + String(*num));
+      SerialUSB.print("Found number ");
+      SerialUSB.println(*num);
       return true;
   }
   return false;
@@ -523,7 +525,9 @@ void saveTokenAndNumbersToFlash(uint8_t token, uint16_t *numbers, uint8_t numOfN
 void saveTokenAndStringToFlash(uint16_t token, char *str)
 {
   // Show the token being written for debugging
-  SerialUSB.println("Display \"" + String(str) + "\"");
+  SerialUSB.print("Display \"");
+  SerialUSB.print(str);
+  SerialUSB.println("\"");
 
   // Is this the end of the block?
   if (offsetIntoBlock > (256 - MAX_TOKEN_LENGTH)) {
@@ -556,7 +560,10 @@ boolean writeTokenBufferToFlash(boolean endOfProfile)
     flash.write(startFlashBlock + numBlocksUsed, 256, flashBuffer256Bytes);
     // Protect flash again
     flash.allowWritingToPrefs(false);
-    SerialUSB.println("Wrote profile flash block " + String(startFlashBlock + numBlocksUsed) + "   size (bytes) = " + String(offsetIntoBlock));
+    SerialUSB.print("Wrote profile flash block ");
+    SerialUSB.print(startFlashBlock + numBlocksUsed);
+    SerialUSB.print("   size (bytes) = ");
+    SerialUSB.println(offsetIntoBlock);
   }
 
   // Initialize all the variables used to store the tokens
@@ -589,15 +596,17 @@ uint16_t getNextTokenFromFlash(char *str, uint16_t *num)
 
     // Is the block number good?
     if ((startBlock & 0x0F) || startBlock < 64) {
-      SerialUSB.println("getNextTokenFromFlash: Profile block number out of range " + String(startBlock));
+      SerialUSB.print("getNextTokenFromFlash: Profile block number out of range ");
+      SerialUSB.println(startBlock);
       return TOKEN_END_OF_PROFILE;
     }
 
     // Read the first block from flash into memory
-    SerialUSB.println("getNextTokenFromFlash: Reading first block " + String(startBlock));
+    SerialUSB.print("getNextTokenFromFlash: Reading first block ");
+    SerialUSB.println(startBlock);
     flash.startRead(startBlock, 256, flashBuffer256Bytes);
     flash.endRead();
-
+    
     // Done for now.  The next time this is called a real token will be returned
     return NOT_A_TOKEN;
   }
@@ -663,7 +672,8 @@ uint16_t getNextTokenFromFlash(char *str, uint16_t *num)
         break;
       }
       // Read the next block from flash into memory
-//      SerialUSB.println("getNextTokenFromFlash: Reading extra block " + String(startBlock+ blocksRead));
+      SerialUSB.print("getNextTokenFromFlash: Reading extra block ");
+      SerialUSB.println(startBlock+ blocksRead);
       flash.startRead(startBlock + blocksRead, 256, flashBuffer256Bytes);
       flash.endRead();
       offset = 0;
@@ -671,7 +681,8 @@ uint16_t getNextTokenFromFlash(char *str, uint16_t *num)
 
     default:
       // Should never get here
-      SerialUSB.println("getNextTokenFromFlash: Unknown token " + String(token));
+      SerialUSB.print("getNextTokenFromFlash: Unknown token ");
+      SerialUSB.println(token);
       token = TOKEN_END_OF_PROFILE;
       break;
   }
@@ -704,7 +715,9 @@ void dumpProfile(uint8_t profileNo)
     // Display the token and parameters
     switch (token) {
       case TOKEN_DISPLAY:
-        SerialUSB.println("Display \"" + String(buffer100Bytes) + "\"");
+        SerialUSB.print("Display \"");
+        SerialUSB.print(buffer100Bytes);
+        SerialUSB.println("\"");
         break;
 
       case TOKEN_MAX_DUTY:
@@ -772,10 +785,12 @@ boolean profileExists(char *profileName)
 // Delete profiles having the same name so you don't get duplicates
 void deleteProfileByName(char *profileName)
 {
-  SerialUSB.println("Looking to delete profile: " + String(profileName));
+  SerialUSB.print("Looking to delete profile: ");
+  SerialUSB.println(profileName);
   for (uint8_t i = 0; i< prefs.numProfiles; i++) {
     if (strcmp(profileName, prefs.profile[i].name) == 0) {
-      SerialUSB.println("Deleting profile " + String(i));
+      SerialUSB.print("Deleting profile ");
+      SerialUSB.println(i);
       deleteProfile(i);
       return;
     }
@@ -814,7 +829,8 @@ uint16_t getFreeProfileBlock()
 
     // If this block isn't being used then bingo!
     if (!blockIsUsed) {
-      SerialUSB.println("Next unused flash block = " + String(flashBlock));
+      SerialUSB.print("Next unused flash block = ");
+      SerialUSB.print(flashBlock);
       return flashBlock;
     }
   }
@@ -838,7 +854,12 @@ void sortProfiles(void)
         continue;
       // If the first profile is not valid then switch them
       if (prefs.profile[i].startBlock == 0) {
-        SerialUSB.println("Moving " + String(prefs.profile[j].name) + " (" + String(j) + ") to " + String(i));
+        SerialUSB.print("Moving ");
+        SerialUSB.print(prefs.profile[j].name);
+        SerialUSB.print(" (");
+        SerialUSB.print(j);
+        SerialUSB.print(") to ");
+        SerialUSB.println(i);
         // Copy one block to the other
         memcpy(&prefs.profile[i], &prefs.profile[j], sizeof(struct profiles));
         // Zero out the old profile
@@ -849,7 +870,13 @@ void sortProfiles(void)
       if (strcmp(prefs.profile[i].name, prefs.profile[j].name) <= 0)
         continue;
       // Swap the profiles
-      SerialUSB.println("Swapping " + String(prefs.profile[i].name) + " (" + String(i) + " and " + String(j) + ")");
+      SerialUSB.print("Swapping ");
+      SerialUSB.print(prefs.profile[i].name);
+      SerialUSB.print(" (");
+      SerialUSB.print(i);
+      SerialUSB.print(" and ");
+      SerialUSB.print(j);
+      SerialUSB.println(")");
       memcpy(&temp, &prefs.profile[i], sizeof(struct profiles));
       memcpy(&prefs.profile[i], &prefs.profile[j], sizeof(struct profiles));
       memcpy(&prefs.profile[j], &temp, sizeof(struct profiles));
@@ -880,7 +907,10 @@ void deleteProfile(uint8_t num)
   prefs.numProfiles = getNumberOfProfiles();
   // Save the prefs
   savePrefs();
-  SerialUSB.println("Deleted profile " + String(num) + "  No. of profiles=" + String(prefs.numProfiles));
+  SerialUSB.print("Deleted profile ");
+  SerialUSB.print(num);
+  SerialUSB.print("  No. of profiles=");
+  SerialUSB.println(prefs.numProfiles);
 }
 
 

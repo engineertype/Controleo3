@@ -142,7 +142,8 @@ userChangedMindAboutAborting:
       }
     
       // Abort the bake
-      SerialUSB.println("Thermocouple error:" + String(buffer100Bytes));
+      SerialUSB.print("Thermocouple error:");
+      SerialUSB.println(buffer100Bytes);
       SerialUSB.println("Bake aborted because of thermocouple error!");
       // Show the error on the screen
       drawThickRectangle(0, 90, 480, 230, 15, RED);
@@ -348,7 +349,8 @@ void displayBakePhase(uint8_t phase, boolean abortDialogIsOnScreen)
   lastLen = displayString(bakePhaseStrPosition[phase], 175, FONT_9PT_BLACK_ON_WHITE, (char *) bakePhaseStr[phase]);
   lastMsgX = bakePhaseStrPosition[phase];
   // Dump this out the debugging port too
-  SerialUSB.println("Baking phase = " + String(bakePhaseStr[phase]));
+  SerialUSB.print("Baking phase = ");
+  SerialUSB.println(bakePhaseStr[phase]);
 }
 
 

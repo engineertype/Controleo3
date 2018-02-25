@@ -449,3 +449,18 @@ void displayTemperatureInHeader()
   }
 }
 
+// Reflow will display the peak temp just under the current temp
+void displayPeakTemp(float temperature)
+{
+  char *str = getTemperatureString(buffer100Bytes, temperature, touchDisplayInCelsius);
+
+  // Display the temperature
+  if (IS_MAX31856_ERROR(temperature)) {
+    tft.fillRect(366, LINE(0), 110, 19, WHITE);
+    displayString(418, LINE(0), FONT_9PT_BLACK_ON_WHITE_FIXED, str);
+  }
+  else {
+    displayFixedWidthString(366, LINE(0), str, 8, FONT_9PT_BLACK_ON_WHITE_FIXED);
+  }
+}
+

@@ -39,8 +39,17 @@ uint16_t renderBitmapFromExternalFlash(uint16_t bitmapNumber, uint16_t x, uint16
       return 0;
     }
 
-    if (0 && bitmapNumber >= BITMAP_LEFT_ARROW)
-      SerialUSB.println("N=" + String(bitmapNumber) + " H=" + String(bitmapHeight) + " W=" + String(bitmapWidth) + " Center=" + String((480 - bitmapWidth) >> 1));
+    if (0 && bitmapNumber >= BITMAP_LEFT_ARROW) {
+      SerialUSB.print("N=");
+      SerialUSB.print(bitmapNumber);
+      SerialUSB.print(" H=");
+      SerialUSB.print(bitmapHeight);
+      SerialUSB.print(" W=");
+      SerialUSB.print(bitmapWidth);
+      SerialUSB.print(" Center=");
+      SerialUSB.print((480 - bitmapWidth) >> 1);
+      SerialUSB.println();
+    }
 
     // Calculate the number of pixels that need to be rendered
     bitmapPixels = bitmapWidth * bitmapHeight;
@@ -85,8 +94,8 @@ uint16_t renderBitmapFromMicrocontrollerFlash(uint16_t bitmapNumber, uint16_t x,
     bitmapHeight = *(fontBitmap++);
     bitmapWidth = *(fontBitmap++);
     bitmapPixels = bitmapWidth * bitmapHeight;
-    if (0 && bitmapNumber >= FONT_IMAGES && bitmapNumber < BITMAP_CONVECTION_FAN1 && bitmapNumber > BITMAP_COOLING_FAN3)
-      SerialUSB.println("N=" + String(bitmapNumber) + " H=" + String(bitmapHeight) + " W=" + String(bitmapWidth) + " Center=" + String((480 - bitmapWidth) >> 1));
+    //if (0 && bitmapNumber >= FONT_IMAGES && bitmapNumber < BITMAP_CONVECTION_FAN1 && bitmapNumber > BITMAP_COOLING_FAN3)
+    //  SerialUSB.println("N=" + String(bitmapNumber) + " H=" + String(bitmapHeight) + " W=" + String(bitmapWidth) + " Center=" + String((480 - bitmapWidth) >> 1));
 
     // Start rendering the bitmap
     tft.startBitmap(x, y, bitmapWidth, bitmapHeight);
