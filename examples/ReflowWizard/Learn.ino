@@ -394,7 +394,7 @@ userChangedMindAboutAborting:
             secondsIntoPhase = 0;
           // If the temperature has dropped below 120C then record the time it took
           if (currentTemperature < LEARNING_SOAK_TEMP && !isHeating) {
-            SerialUSB.print("Sufficiently cooled, time taken was ");
+            SerialUSB.print("Sufficiently cooled. Time taken was ");
             SerialUSB.println(secondsIntoPhase);
           }
           if (currentTemperature < LEARNING_SOAK_TEMP && prefs.learnedInsulation == 0 && currentlyMeasuring == TYPE_WHOLE_OVEN) {
@@ -418,7 +418,7 @@ userChangedMindAboutAborting:
             case TYPE_BOTTOM_ELEMENT:
               displayString(10, LINE(0), FONT_9PT_BLACK_ON_WHITE, (char *) "Measuring how quickly the oven gets");
               displayString(10, LINE(1), FONT_9PT_BLACK_ON_WHITE, (char *) "to 150~C using bottom element at 80%.");
-              SerialUSB.println("Thermal inertia, switching to bottom element at 80%");
+              SerialUSB.println("Thermal inertia: switching to bottom element at 80%");
               secondsLeftOfPhase = LEARNING_INERTIA_DURATION;
               learningDutyCycle = 80;
               break;
@@ -426,7 +426,7 @@ userChangedMindAboutAborting:
               // The top element is closer to the thermocouple, and is also close to the insulation so run it cooler
               displayString(10, LINE(0), FONT_9PT_BLACK_ON_WHITE, (char *) "Measuring how quickly the oven gets");
               displayString(10, LINE(1), FONT_9PT_BLACK_ON_WHITE, (char *) "to 150~C using the top element at 70%.");
-              SerialUSB.println("Thermal inertia, switching to top element at 70%");
+              SerialUSB.println("Thermal inertia: switching to top element at 70%");
               // No need to stabilize temperature at 120C at the end of this phase (so it has shorter duration)
               secondsLeftOfPhase = LEARNING_FINAL_INERTIA_DURATION;
               learningDutyCycle = 70;
@@ -438,11 +438,11 @@ userChangedMindAboutAborting:
               showLearnedNumbers();
               // Done with measuring the oven.  Start cooling
               learningPhase = LEARNING_PHASE_START_COOLING;
-              SerialUSB.println("learning finished, numbers printed to screen");
               secondsLeftOfPhase = 0;
               // Save all the learned values now
               prefs.learningComplete = true;
               savePrefs();
+              SerialUSB.println("Learning finished. Numbers printed to screen. Preferences saved.");
               break;
           }
           // Reset some phase variables
@@ -696,6 +696,7 @@ uint8_t ovenScore()
 
 
 // The learned numbers are shown once the oven has completed the 1-hour learning run
+// and any time you go back to the learning screen.
 void showLearnedNumbers()
 {
   uint16_t score, offset;
