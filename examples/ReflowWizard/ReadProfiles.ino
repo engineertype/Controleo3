@@ -11,7 +11,7 @@ char *tokenString[NUM_TOKENS] = {(char *) "not_a_token", (char *) "name", (char 
                                  (char *) "open door", (char *) "close door", (char *) "bias", (char *) "convection fan on", (char *) "convection fan off",
                                  (char *) "cooling fan on", (char *) "cooling fan off", (char *) "ramp temperature", (char *) "element duty cycle",
                                  (char *) "wait for", (char *) "wait until above", (char *) "wait until below", (char *) "play tune", (char *) "play beep",
-                                 (char *) "door percentage", (char *) "maintain"};
+                                 (char *) "door percentage", (char *) "maintain", (char *) "time above"};
 char *tokenPtr[NUM_TOKENS];
 
 // Scan the SD card, looking for profiles
@@ -224,6 +224,7 @@ void processFile(File file)
       case TOKEN_WAIT_FOR_SECONDS:
       case TOKEN_WAIT_UNTIL_ABOVE_C:
       case TOKEN_WAIT_UNTIL_BELOW_C:
+      case TOKEN_TIME_ABOVE:
         // These require 1 parameter
         if (!getNumberFromFile(file, &numbers[0])) {
           SerialUSB.println("Error getting number");
@@ -478,6 +479,9 @@ char *tokenToText(char *str, uint8_t token, uint16_t *numbers)
     case TOKEN_PLAY_BEEP:
       strcpy(str, "Play beep");
       break;
+    case TOKEN_TIME_ABOVE:
+      sprintf(str, "Display time above %d degrees", numbers[0]);
+      break;
   }
   return str;  
 }
@@ -643,6 +647,7 @@ uint16_t getNextTokenFromFlash(char *str, uint16_t *num)
     case TOKEN_WAIT_FOR_SECONDS:
     case TOKEN_WAIT_UNTIL_ABOVE_C:
     case TOKEN_WAIT_UNTIL_BELOW_C:
+    case TOKEN_TIME_ABOVE:
       // These require 1 parameter
       memcpy(num, flashBuffer256Bytes + offset + 1, 2);
       offset += 3;
@@ -742,6 +747,7 @@ void dumpProfile(uint8_t profileNo)
       case TOKEN_WAIT_FOR_SECONDS:
       case TOKEN_WAIT_UNTIL_ABOVE_C:
       case TOKEN_WAIT_UNTIL_BELOW_C:
+      case TOKEN_TIME_ABOVE:
         // These require 1 parameter
         SerialUSB.println(tokenToText(buffer100Bytes, token, numbers));
         break;

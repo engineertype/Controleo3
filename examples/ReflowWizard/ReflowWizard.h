@@ -235,8 +235,9 @@ struct profiles {
 #define TOKEN_PLAY_BEEP              24   // Play a beep
 #define TOKEN_OVEN_DOOR_PERCENT      25   // Open the oven door a certain percentage
 #define TOKEN_MAINTAIN_TEMP          26   // Maintain a specific temperature for a certain duration
+#define TOKEN_TIME_ABOVE             27   // Display the duration above a specified temperature on the screen
 
-#define NUM_TOKENS                   27   // Number of tokens to look for in the profile file on the SD card
+#define NUM_TOKENS                   28   // Number of tokens to look for in the profile file on the SD card
 #define TOKEN_NEXT_FLASH_BLOCK     0xFE   // Profile continues in next flash block 
 #define TOKEN_END_OF_PROFILE       0xFF   // Safety measure.  Flash is initialized to 0xFF, so this token means end-of-profile 
 

@@ -392,6 +392,18 @@ userChangedMindAboutAborting:
             pidPreviousError = 0;
             pidIntegral = 0;
             break;
+            
+          case TOKEN_TIME_ABOVE:
+            // Display duration above the specified temperature
+            // Resets the time if there was already a time-above specified
+            // Zero will hide the display of time-above
+            timeAboveTemperature = numbers[0];
+            timeAboveTimer = 0;
+            showTimeAboveTitle(displayInCelcius());
+            if(timeAboveTemperature > 0) displayTimeAbove(timeAboveTimer);
+            SerialUSB.print("Setting time above temperature to ");
+            SerialUSB.println(timeAboveTemperature);
+            break;
 
           case TOKEN_CONVECTION_FAN_ON:
             // Turn on the convection fan
@@ -809,7 +821,7 @@ void displayTimeAbove(uint32_t seconds)
 //show the title that applies to the time-above measurement (assume the temperature is 3 digits or less)
 //this is used as the callback when temperature units are changed. 
 void showTimeAboveTitle(bool displayCelcius) {
-  tft.fillRect(196, LINE(5), 226, 30, WHITE);
+  tft.fillRect(196, LINE(5), 284, 30, WHITE); //also erases the time currently displayed
   if(timeAboveTemperature > 0) {
     if(displayCelcius) {
       sprintf(buffer100Bytes, "Time above %d~C:", (int)timeAboveTemperature);
