@@ -4,7 +4,7 @@
 //
 
 // Perform a reflow
-// Stay in this function until the bake is done or canceled
+// Stay in this function until the reflow is done or canceled
 void reflow(uint8_t profileNo)
 {
   uint32_t reflowTimer = 0, countdownTimer = 0, lastLoopTime = millis();
@@ -20,6 +20,13 @@ void reflow(uint8_t profileNo)
   int16_t pidPower;
   float pidPreviousError = 0, pidIntegral = 0, pidDerivative, thisError;
 
+  uint16_t graphTime = 0, graphMaxTime = 300;
+  uint16_t graphLastX = 600, graphLastY;
+
+  //Demo Mode for testing without an oven connected
+  bool inDemo = false;
+  uint16_t demoTemp = 50;
+  int16_t  demoTempDelta = 4;
   
   // Verify the outputs are configured
   if (areOutputsConfigured() == false) {
@@ -65,16 +72,36 @@ void reflow(uint8_t profileNo)
   // Erase the bottom part of the screen
   tft.fillRect(0, 100, 480, 220, WHITE);
 
+  //pre-read the profile to determine graph limits and profile points.  
+  graphLimitsFromProfile(&graphMinTemp, &graphMaxTemp, &graphMaxTime, maxTemperature);
+
+  //reset pointer to beginning of profile
+  if (getNextTokenFromFlash(0, &prefs.profile[profileNo].startBlock) == TOKEN_END_OF_PROFILE)
+    return;
+
   // Ug, hate goto's!  But this saves a lot of extraneous code.
 userChangedMindAboutAborting:
 
+  //Draw the graph and new Stop button
+  tft.drawFastVLine(45, 170, 125, BLACK);
+  tft.drawFastHLine(45, 295, 300, BLACK);
+  sprintf(buffer100Bytes, "%d", graphMaxTemp);
+  displayString(0, 165, FONT_9PT_BLACK_ON_WHITE, buffer100Bytes);
+  displayString(11, 220, FONT_9PT_BLACK_ON_WHITE, (char *) "~C");
+  sprintf(buffer100Bytes, "%d", graphMinTemp);
+  displayString(14, 280, FONT_9PT_BLACK_ON_WHITE, buffer100Bytes);
+  displayString(44, 300, FONT_9PT_BLACK_ON_WHITE, (char *) "0");
+  displayString(135, 300, FONT_9PT_BLACK_ON_WHITE, (char *) "-Seconds-");
+  sprintf(buffer100Bytes, "%d", graphMaxTime);
+  displayString(305, 300, FONT_9PT_BLACK_ON_WHITE, buffer100Bytes);
+
   // Setup the tap targets on this screen
   clearTouchTargets();
-  drawButton(110, 230, 260, 87, BUTTON_LARGE_FONT, (char *) "STOP");
-  defineTouchArea(20, 150, 440, 170); // Large tap target to stop baking
+  drawButton(352, 230, 126, 87, BUTTON_LARGE_FONT, (char *) "STOP");
+  defineTouchArea(320, 200, 160, 120); // Large tap target to stop
 
-  // Toggle the baking temperature between C/F if the user taps in the top-right corner
-  setTouchTemperatureUnitChangeCallback(displayBakeTemperatureAndDuration);
+  // Toggle the temperature between C/F if the user taps in the top-right corner
+  setTouchTemperatureUnitChangeCallback(changeTempDisplay);
 
   // Display the status (if waiting)
   updateStatusMessage(token, countdownTimer, desiredTemperature);
@@ -112,7 +139,7 @@ userChangedMindAboutAborting:
       case 1:
         // This is the cancel button of the Abort dialog.  User wants to continue
         // Erase the Abort dialog
-        tft.fillRect(0, 90, 480, 230, WHITE);
+        tft.fillRect(0, 135, 480, 185, WHITE);
         abortDialogIsOnScreen = false;
         counter = 0;
         // Redraw the screen under the dialog
@@ -129,7 +156,7 @@ userChangedMindAboutAborting:
     // Try not to update everything in the same 20ms time slice
     // Update the reflow timer
     if (counter == 0 && !abortDialogIsOnScreen)
-      displayReflowDuration(reflowTimer);
+      displayReflowDuration(graphTime);
     // Update the temperature
     if (counter == 2)
       displayTemperatureInHeader();
@@ -142,6 +169,7 @@ userChangedMindAboutAborting:
     if (++counter >= 50) {
       counter = 0;
       isOneSecondInterval = true;
+      graphTime++;
       if (countdownTimer)
         countdownTimer--;
       if (incrementTimer && reflowPhase < REFLOW_ALL_DONE)
@@ -150,6 +178,7 @@ userChangedMindAboutAborting:
     
     // Read the current temperature
     currentTemperature = getCurrentTemperature();
+  if (!inDemo) {
     if (IS_MAX31856_ERROR(currentTemperature)) {
       switch ((int) currentTemperature) {
         case FAULT_OPEN:
@@ -169,6 +198,9 @@ userChangedMindAboutAborting:
       showReflowError(iconsX, (char *) "Thermocouple error:", buffer100Bytes);
       reflowPhase = REFLOW_ABORT;
     }
+  } else { //demo mode
+    currentTemperature = demoTemp;
+  }
 
     // Was the maximum temperature exceeded?
     if (currentTemperature > maxTemperature) {
@@ -180,6 +212,45 @@ userChangedMindAboutAborting:
       sprintf(buffer100Bytes, "Maximum temperature of %d~C", maxTemperature);
       showReflowError(iconsX, buffer100Bytes, (char *) "was exceeded.");
       reflowPhase = REFLOW_ABORT;      
+    }
+
+    if (inDemo && isOneSecondInterval) { //update demo temp
+      demoTemp += demoTempDelta;
+      if ((demoTemp > maxTemperature) ||
+          (demoTemp < 35)) {
+        demoTempDelta = -demoTempDelta;
+        demoTemp += demoTempDelta;
+      }
+    }
+
+    //plot current temp on profile graph
+    if (isOneSecondInterval  && !abortDialogIsOnScreen) {
+      uint16_t plotTime = graphTime;
+      while (plotTime >= graphMaxTime) {
+        plotTime -= graphMaxTime;
+      }
+      uint16_t xpos = 45 + (((float) plotTime)/((float) graphMaxTime)) * 300;
+      uint16_t plotTemp = currentTemperature;
+      if (currentTemperature < graphMinTemp) {
+        plotTemp = graphMinTemp;
+      } else if (currentTemperature > graphMaxTemp) {
+        plotTemp = graphMaxTemp;
+      }
+      uint16_t ypos = 294 - (125.0 * (((float) (plotTemp - graphMinTemp))/((float) (graphMaxTemp - graphMinTemp))));
+      if ((xpos >= graphLastX) &&
+          (ypos != graphLastY)) { //We need to draw a segment (not a dot)
+        int16_t len = (ypos - graphLastY);
+        if (len < 0) {  //need to draw from new to old
+          tft.fillRect((xpos - 1), ypos - 1, 3, -len + 1, RED);
+        } else {        //need to draw from old to new
+          tft.fillRect((xpos - 1), graphLastY - 1, 3, len + 1, RED);
+        }
+      } else {  //First or wrapped
+        //First point on graph is just a dot
+        tft.fillRect((xpos - 1), (ypos-1), 3, 3, RED);
+      }
+      graphLastX = xpos;
+      graphLastY = ypos;
     }
 
     switch (reflowPhase) {
@@ -402,8 +473,8 @@ userChangedMindAboutAborting:
           case TOKEN_END_OF_PROFILE:
             // The end of the profile has been reached.  Reflow is done
             // Change the STOP button to DONE
-            tft.fillRect(150, 242, 180, 36, WHITE);
-            drawButton(110, 230, 260, 93, BUTTON_LARGE_FONT, (char *) "DONE");
+            tft.fillRect(352, 230, 126, 70, WHITE);
+            drawButton(352, 230, 126, 92, BUTTON_LARGE_FONT, (char *) "DONE");
             reflowPhase = REFLOW_ALL_DONE;
             // One more reflow completed!
             prefs.numReflows++;
@@ -508,6 +579,7 @@ userChangedMindAboutAborting:
         pidTemperature += pidTemperatureDelta;
       
         // Abort if deviated too far from the required temperature
+      if (!inDemo) {
         if (reflowPhase != REFLOW_MAINTAIN_TEMP && abs(pidTemperature - currentTemperature) > maxTemperatureDeviation) {
           // Open the oven door
           setServoPosition(prefs.servoOpenDegrees, 3000);
@@ -517,6 +589,7 @@ userChangedMindAboutAborting:
           reflowPhase = REFLOW_ALL_DONE;
           break;
         }
+      }
 
         // Assume a certain power level, based on the current temperature and the rate-of-rise
         // This should be fairly accurate, and is based on the learned values
@@ -630,14 +703,14 @@ userChangedMindAboutAborting:
 // Draw the abort dialog on the screen.  The user needs to confirm that they want to exit reflow
 void drawReflowAbortDialog()
 {
-  drawThickRectangle(0, 90, 480, 230, 15, RED);
-  tft.fillRect(15, 105, 450, 200, WHITE);
-  displayString(135, 110, FONT_12PT_BLACK_ON_WHITE, (char *) "Stop Reflow");
-  displayString(62, 150, FONT_9PT_BLACK_ON_WHITE, (char *) "Are you sure you want to stop");
-  displayString(62, 180, FONT_9PT_BLACK_ON_WHITE, (char *) "the reflow?");
+  drawThickRectangle(0, 135, 480, 190, 15, RED);
+  tft.fillRect(15, 150, 450, 160, WHITE);
+  displayString(135, 152, FONT_12PT_BLACK_ON_WHITE, (char *) "Stop Reflow");
+  displayString(62, 182, FONT_9PT_BLACK_ON_WHITE, (char *) "Are you sure you want to stop");
+  displayString(62, 212, FONT_9PT_BLACK_ON_WHITE, (char *) "the reflow?");
   clearTouchTargets();
-  drawTouchButton(60, 230, 160, 72, BUTTON_LARGE_FONT, (char *) "Stop");
-  drawTouchButton(260, 230, 160, 105, BUTTON_LARGE_FONT, (char *) "Cancel");
+  drawTouchButton(60, 235, 160, 72, BUTTON_LARGE_FONT, (char *) "Stop");
+  drawTouchButton(260, 235, 160, 105, BUTTON_LARGE_FONT, (char *) "Cancel");
 }
 
 
@@ -699,6 +772,7 @@ void showReflowError(uint16_t iconsX, char *line1, char *line2)
   // Show the error on the screen
   drawThickRectangle(0, 90, 480, 230, 15, RED);
   tft.fillRect(15, 105, 450, 120, WHITE);
+  tft.fillRect(15, 225, 333, 80, WHITE);
   displayString(125, 110, FONT_12PT_BLACK_ON_WHITE, (char *) "Reflow Error!");
   displayString(40, 150, FONT_9PT_BLACK_ON_WHITE, line1);
   displayString(40, 180, FONT_9PT_BLACK_ON_WHITE, line2);
@@ -723,18 +797,18 @@ void showReflowError(uint16_t iconsX, char *line1, char *line2)
 // Display the reflow timer
 void displayReflowDuration(uint32_t seconds)
 {
-  static uint16_t oldWidth = 1, timerX = 130;
+  static uint16_t oldWidth = 1, timerX = 385;
 
   // Update the clock display
-  uint16_t newWidth = displayString(timerX, 160, FONT_22PT_BLACK_ON_WHITE_FIXED, secondsInClockFormat(buffer100Bytes, seconds));
+  uint16_t newWidth = displayString(timerX, 185, FONT_12PT_BLACK_ON_WHITE_FIXED, secondsInClockFormat(buffer100Bytes, seconds));
   // Keep the timer display centered
   if (newWidth != oldWidth) {
     // The width has changed (one more character on the display).  Erase what was there
-    tft.fillRect(timerX, 160, newWidth > oldWidth? newWidth : oldWidth, 48, WHITE);
+    tft.fillRect(timerX, 185, newWidth > oldWidth? newWidth : oldWidth, 40, WHITE);
     // Redraw the timer
     oldWidth = newWidth;
-    timerX = 240 - (newWidth >> 1);
-    displayString(timerX, 160, FONT_22PT_BLACK_ON_WHITE_FIXED, buffer100Bytes);
+    timerX = 415 - (newWidth >> 1);
+    displayString(timerX, 185, FONT_12PT_BLACK_ON_WHITE_FIXED, buffer100Bytes);
   }
 }
 
@@ -779,5 +853,72 @@ uint16_t getBasePIDPower(double temperature, double increment, uint16_t *bias, u
   // Put it all together
   totalBasePower = totalBasePower * biasFactor;
   return totalBasePower < 100? totalBasePower : 100;
+}
+
+void graphLimitsFromProfile(uint16_t *minTemp, uint16_t *maxTemp, uint16_t *maxSeconds, uint16_t defaultMaxTemp) {
+  *minTemp = 50;
+  *maxTemp = defaultMaxTemp;
+  uint16_t totalSeconds = 0;
+  
+  // spin through the tokens in the profile
+  uint16_t numbers[4];
+  uint16_t token = getNextTokenFromFlash(buffer100Bytes, numbers);
+  while (token != TOKEN_END_OF_PROFILE) {
+    switch (token) {
+      case TOKEN_MAX_TEMPERATURE:
+        *maxTemp = numbers[0] < 300? numbers[0]: 300;
+        break;
+  
+      case TOKEN_INITIALIZE_TIMER:
+        totalSeconds += numbers[0];
+        break;
+  
+      case TOKEN_WAIT_FOR_SECONDS:
+        totalSeconds += numbers[0];
+        break;
+  
+      case TOKEN_MAINTAIN_TEMP:
+        totalSeconds += (numbers[1] > 0? numbers[1] : 1);
+        break;
+  
+      case TOKEN_TEMPERATURE_TARGET:
+        totalSeconds += (numbers[1] > 0? numbers[1] : 1);
+        break;
+  
+      default:
+        break;
+    }
+    token = getNextTokenFromFlash(buffer100Bytes, numbers);
+  }
+  if (totalSeconds > 600) { //default max time for graph is 10 minutes
+    *maxSeconds = totalSeconds;
+  } else {
+    *maxSeconds = 600; //ten minutes
+  }
+}
+
+// This is a callback routine, called if the user taps in the top-right corner
+void changeTempDisplay(boolean displayCelsius)
+{
+  uint16_t xstart = 0;
+  //Clear the left axis of the graph
+  tft.fillRect(0, 150, 44, 170, WHITE);
+  //Redraw in current units
+  sprintf(buffer100Bytes, "%d", displayCelsius? graphMaxTemp : (graphMaxTemp*9/5)+32);
+  if (strlen(buffer100Bytes) < 3) {
+    xstart = 14;
+  }
+  displayString(xstart, 165, FONT_9PT_BLACK_ON_WHITE, buffer100Bytes);
+  if (displayCelsius) {
+    displayString(11, 220, FONT_9PT_BLACK_ON_WHITE, (char *) "~C");
+  } else {
+    displayString(11, 220, FONT_9PT_BLACK_ON_WHITE, (char *) "~F");
+  }
+  sprintf(buffer100Bytes, "%d", displayCelsius? graphMinTemp : (graphMinTemp*9/5)+32);
+  xstart = 0;
+  if (strlen(buffer100Bytes) < 3) {
+    xstart = 14;
+  }
+  displayString(xstart, 280, FONT_9PT_BLACK_ON_WHITE, buffer100Bytes);
 }
 

@@ -20,6 +20,10 @@ Controleo3Touch  touch;
 Controleo3Flash  flash;
 Controleo3MAX31856 thermocouple;
 
+//Needed in the TempUnitChange callback
+uint16_t graphMaxTemp, graphMinTemp = 50;
+
+
 
 void setup(void) {
   // First priority - turn off the relays!
