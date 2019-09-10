@@ -12,7 +12,7 @@ http://www.whizoo.com/update
 
 ### This is the GitHub source code repository for Controleo3.
 
-This software has been released under the GPL 3.0 license.  You are free
+This software has been released under the MIT license.  You are free
 To use it any way you wish.
 
 In this folder are:

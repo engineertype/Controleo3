@@ -1,6 +1,7 @@
 // Written by Peter Easton
-// Released under CC BY-NC-SA 3.0 license
-// Build a reflow oven: http://whizoo.com
+// Released under the MIT license
+// Build a reflow oven: https://whizoo.com
+//
 //
 // All the bitmaps exist in external flash, but some are duplicated in microcontroller flash.
 // Reading from microcontroller flash is 20 times faster than external flash, so it makes sense

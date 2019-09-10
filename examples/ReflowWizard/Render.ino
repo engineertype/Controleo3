@@ -1,7 +1,8 @@
 // Written by Peter Easton
-// Released under CC BY-NC-SA 3.0 license
-// Build a reflow oven: http://whizoo.com
-//
+// Released under the MIT license
+// Build a reflow oven: https://whizoo.com
+
+
 // Some fonts are fixed width.  This is so that when updating a field (like temperature), you can just overwrite
 // the previous number instead of erasing the number and then redrawing it.
 

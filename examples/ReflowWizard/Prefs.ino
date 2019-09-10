@@ -1,7 +1,7 @@
 // Written by Peter Easton
-// Released under CC BY-NC-SA 3.0 license
-// Build a reflow oven: http://whizoo.com
-//
+// Released under the MIT license
+// Build a reflow oven: https://whizoo.com
+
 
 // Preferences are stored in 4K blocks.  There are 4 blocks, and they are rotated for each write to
 // maximixe redundancy and minimize write wear.  Blocks have a 32-bit sequence number as the first

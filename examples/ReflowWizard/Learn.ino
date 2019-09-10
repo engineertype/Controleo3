@@ -1,7 +1,7 @@
 // Written by Peter Easton
-// Released under CC BY-NC-SA 3.0 license
-// Build a reflow oven: http://whizoo.com
-//
+// Released under the MIT license
+// Build a reflow oven: https://whizoo.com
+
 
 #define LEARNING_PHASE_INITIAL_RAMP         0
 #define LEARNING_PHASE_CONSTANT_TEMP        1

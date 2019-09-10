@@ -1,7 +1,7 @@
 // Written by Peter Easton
-// Released under CC BY-NC-SA 3.0 license
-// Build a reflow oven: http://whizoo.com
-//
+// Released under the MIT license
+// Build a reflow oven: https://whizoo.com
+
 
 #include <Arduino.h>
 #include <Controleo3.h> // Hardware-specific library
