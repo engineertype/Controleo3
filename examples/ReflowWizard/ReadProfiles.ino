@@ -11,7 +11,7 @@ char *tokenString[NUM_TOKENS] = {(char *) "not_a_token", (char *) "name", (char 
                                  (char *) "open door", (char *) "close door", (char *) "bias", (char *) "convection fan on", (char *) "convection fan off",
                                  (char *) "cooling fan on", (char *) "cooling fan off", (char *) "ramp temperature", (char *) "element duty cycle",
                                  (char *) "wait for", (char *) "wait until above", (char *) "wait until below", (char *) "play tune", (char *) "play beep",
-                                 (char *) "door percentage", (char *) "maintain"};
+                                 (char *) "door percentage", (char *) "maintain", (char *) "user taps screen"};
 char *tokenPtr[NUM_TOKENS];
 
 // Scan the SD card, looking for profiles
@@ -244,6 +244,7 @@ void processFile(File file)
       case TOKEN_COOLING_FAN_OFF:
       case TOKEN_PLAY_DONE_TUNE:
       case TOKEN_PLAY_BEEP:
+      case TOKEN_TAP_SCREEN:
         // Just save the token to flash.  These don't take parameters
         saveTokenAndNumbersToFlash(token, numbers, 0);
         newProfile->noOfTokens++;
@@ -476,6 +477,9 @@ char *tokenToText(char *str, uint8_t token, uint16_t *numbers)
     case TOKEN_PLAY_BEEP:
       strcpy(str, "Play beep");
       break;
+    case TOKEN_TAP_SCREEN:
+      strcpy(str, "User taps screen");
+      break;
   }
   return str;  
 }
@@ -647,6 +651,7 @@ uint16_t getNextTokenFromFlash(char *str, uint16_t *num)
     case TOKEN_COOLING_FAN_OFF:
     case TOKEN_PLAY_DONE_TUNE:
     case TOKEN_PLAY_BEEP:
+    case TOKEN_TAP_SCREEN:
       // These don't take parameters
       offset ++;
       break;
@@ -741,6 +746,7 @@ void dumpProfile(uint8_t profileNo)
       case TOKEN_COOLING_FAN_OFF:
       case TOKEN_PLAY_DONE_TUNE:
       case TOKEN_PLAY_BEEP:
+      case TOKEN_TAP_SCREEN:
         // These don't take parameters
         SerialUSB.println(tokenToText(buffer100Bytes, token, numbers));
         break;

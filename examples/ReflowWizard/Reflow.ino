@@ -84,6 +84,14 @@ userChangedMindAboutAborting:
 
   // Keep looping until reflow is done
   while (1) {
+    // Waiting for the user to tap the screen?
+    if (reflowPhase == REFLOW_WAITING_FOR_TAP && touch.isPressed()) {
+      updateStatusMessage(NOT_A_TOKEN, 0, 0);
+      playTones(TUNE_BUTTON_PRESSED);
+      quickDebounce();
+      reflowPhase = REFLOW_PHASE_NEXT_COMMAND;
+    }
+    
     // Has there been a touch?
     switch (getTap(CHECK_FOR_TAP_THEN_EXIT)) {
       case 0: 
@@ -399,6 +407,12 @@ userChangedMindAboutAborting:
             reflowPhase = REFLOW_PID;
             break;
 
+          case TOKEN_TAP_SCREEN:
+            updateStatusMessage(NOT_A_TOKEN, 0, 0);
+            updateStatusMessage(token, 0, 0);
+            reflowPhase = REFLOW_WAITING_FOR_TAP;
+            break;
+
           case TOKEN_END_OF_PROFILE:
             // The end of the profile has been reached.  Reflow is done
             // Change the STOP button to DONE
@@ -687,6 +701,10 @@ void updateStatusMessage(uint16_t token, uint16_t timer, uint16_t temperature)
       if (numberLength == 0)
         numberLength = strlen(buffer100Bytes);
       displayFixedWidthString(20+strLength, LINE(2), buffer100Bytes, numberLength, FONT_9PT_BLACK_ON_WHITE_FIXED);
+      break;
+
+    case TOKEN_TAP_SCREEN:
+      displayString(20, LINE(2), FONT_9PT_BLACK_ON_WHITE, "Tap the screen to continue ...");
       break;
   }
 }
