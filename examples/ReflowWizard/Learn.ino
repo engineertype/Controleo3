@@ -355,14 +355,14 @@ userChangedMindAboutAborting:
                 drawPerformanceBar(false, map(i, 35, 60, 100, 0));
                 break;
               case TYPE_BOTTOM_ELEMENT:
-                // (120 seconds = excellent, 240 seconds = awful)
-                i = constrain(learningDutyCycle, 100, 240);
+                // (100 seconds = excellent, 240 seconds = awful)
+                i = constrain(secondsTo150C, 100, 240);
                 drawPerformanceBar(false, map(i, 100, 240, 100, 0));
                 break;
               case TYPE_TOP_ELEMENT:
                 // (60 seconds = excellent, 140 seconds = awful)
                 // Closer to thermocouple, heating less of the oven = less time needed
-                i = constrain(learningDutyCycle, 60, 140);
+                i = constrain(secondsTo150C, 60, 140);
                 drawPerformanceBar(false, map(i, 60, 140, 100, 0));
                 break;
             }
