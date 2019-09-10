@@ -74,7 +74,7 @@ userChangedMindAboutAborting:
   defineTouchArea(20, 150, 440, 170); // Large tap target to stop baking
 
   // Toggle the baking temperature between C/F if the user taps in the top-right corner
-  setTouchTemperatureUnitChangeCallback(displayBakeTemperatureAndDuration);
+  setTouchTemperatureUnitChangeCallback(0);
 
   // Display the status (if waiting)
   updateStatusMessage(token, countdownTimer, desiredTemperature);
