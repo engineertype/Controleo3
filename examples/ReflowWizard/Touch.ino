@@ -291,7 +291,6 @@ void clearTouchTargets()
   touchCallbackInterval = 0;
   touchCallbackTemperatureUnitChange = 0;
   touchScreenshotTaps = 0;
-  touchDisplayInCelsius = true;
 }
 
 
