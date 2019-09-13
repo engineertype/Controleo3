@@ -626,7 +626,7 @@ redraw:
           displayString(10, LINE(0), FONT_9PT_BLACK_ON_WHITE, (char *) "A learning run is necessary to measure");
           displayString(10, LINE(1), FONT_9PT_BLACK_ON_WHITE, (char *) "the performance of the heating");
           displayString(10, LINE(2), FONT_9PT_BLACK_ON_WHITE, (char *) "elements and insulation.  Learning");
-          displayString(10, LINE(3), FONT_9PT_BLACK_ON_WHITE, (char *) "will take around 1 hour.");
+          displayString(10, LINE(3), FONT_9PT_BLACK_ON_WHITE, (char *) "will take around 25 minutes.");
         }
         drawTouchButton(100, 180, 280, 164, BUTTON_SMALL_FONT, (char *) "Start Learning");
         drawNavigationButtons(false, true);

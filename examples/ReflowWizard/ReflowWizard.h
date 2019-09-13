@@ -262,8 +262,10 @@ struct Controleo3Prefs {
   uint8_t   servoOpenDegrees;                 // Servo door open 
   uint8_t   servoClosedDegrees;               // Servo door closed
   uint8_t   learningComplete;                 // Have the learning runs been completed?
-  uint8_t   learnedPower[4];                  // The power of the individual elements and the total power
-  uint16_t  learnedInertia[4];                // The thermal inertia of individual elements and the total intertia
+  uint8_t   learnedPower;                     // The power (duty cycle) of all elements to keep the oven at 120C
+  uint8_t   spare1[3];                        // Spare (was power of top, bottom and boost)
+  uint16_t  learnedInertia;                   // The time need to rasie the temperature from 120C to 150C
+  uint16_t  spare2[3];                        // Spare (was inertia of top, bottom and boost)
   uint16_t  learnedInsulation;                // The insulation value of the oven  
   uint16_t  bakeTemperature;                  // Bake temperature in Celsius
   uint16_t  bakeDuration;                     // Bake duration (see getBakeSeconds( ))

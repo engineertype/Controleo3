@@ -67,13 +67,13 @@ void takeCurrentThermocoupleReading()
 
 //#define SIMULATE_TEMPERATURE
 #ifdef SIMULATE_TEMPERATURE
-#define NUM_READINGS  15
+#define NUM_READINGS  40
 float getCurrentTemperature() {
   static float temperature = 24.34;
   static uint8_t outputValue[NUM_READINGS];
   static uint32_t lastUpdate = 0;
 
-  if (millis() - lastUpdate < 1)  // Was 900
+  if (millis() - lastUpdate < 240)
     return temperature;
   lastUpdate = millis();
 
@@ -93,12 +93,15 @@ float getCurrentTemperature() {
   for (uint8_t i=0; i< NUM_READINGS; i++)
     sum += outputValue[i];
 
-  // If no elements are on, the temperature will drop
+  // Simulate energy loss though the oven shell
   if (temperature > 25.0)
-    temperature -= ((temperature - 25.0) / 80); 
+    temperature -= ((temperature - 25.0) / 1700.0); 
 
-  // If elements are on the temperature will increase
-  temperature += sum / 7;  // Was 12
+  // More power is required at higher temperatures for the same increase
+  int maxIncrease = map(constrain(temperature, 20, 200), 20, 200, 50, 15);
+  if (sum > maxIncrease)
+    sum = maxIncrease;
+  temperature += sum / 110.0; 
 
     // Return the temperature
   return temperature;

@@ -117,7 +117,7 @@ userChangedMindAboutAborting:
       displayTemperatureInHeader();
     // Dump data to the debugging port
     if (counter == 5 && bakePhase != BAKING_PHASE_DONE)
-      DisplayBakeTime(secondsLeftOfBake, currentTemperature, bakeDutyCycle, bakeIntegral);
+      DumpDataToUSB(secondsLeftOfBake, currentTemperature, bakeDutyCycle, bakeIntegral);
 
     // Determine if this is on a 1-second interval
     isOneSecondInterval = false;
@@ -327,7 +327,7 @@ userChangedMindAboutAborting:
 
 
 // Print baking information to the serial port so it can be plotted
-void DisplayBakeTime(uint16_t duration, float temperature, int duty, int integral) {
+void DumpDataToUSB(uint16_t duration, float temperature, int duty, int integral) {
   // Write the time and temperature to the serial port, for graphing or analysis on a PC
   uint16_t fraction = ((uint16_t) (temperature * 100)) % 100;
   sprintf(buffer100Bytes, "%u, %d.%02d, %i, %i", duration, (uint16_t) temperature, fraction, duty, integral);

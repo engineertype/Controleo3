@@ -143,7 +143,7 @@ userChangedMindAboutAborting:
       displayTemperatureInHeader();
     // Dump data to the debugging port
     if (counter == 5 && reflowPhase != REFLOW_ALL_DONE)
-      DisplayBakeTime(reflowTimer, currentTemperature, 0, 0);
+      DumpDataToUSB(reflowTimer, currentTemperature, 0, 0);
 
     // Determine if this is on a 1-second interval
     isOneSecondInterval = false;
@@ -552,7 +552,7 @@ userChangedMindAboutAborting:
         //   increase the power to the elements a tiny amount.  Having this any higher will create oscillations.
         // Kd is based on the learned inertia value and for the typical reflow oven it should be around 35.  Some resistive
         //   elements take a very long time to heat up and cool down so this will be a much higher value.
-        Kd = map(constrain(prefs.learnedInertia[TYPE_WHOLE_OVEN], 30, 80), 30, 80, 30, 60);
+        Kd = map(constrain(prefs.learnedInertia, 30, 80), 30, 80, 30, 60);
         // Dump these values out over USB for debugging
         SerialUSB.println("T="+String(currentTemperature)+" P="+String(pidTemperature)+" D="+String(pidTemperatureDelta)+" E="+String(thisError)+" I="+String(pidIntegral)+" D="+String(pidDerivative)+" Kd="+String(Kd));
 
@@ -767,7 +767,7 @@ uint16_t getBasePIDPower(double temperature, double increment, uint16_t *bias, u
   // First, figure out the power required to maintain this temperature
   // Start by extrapolating the power using all elements at 120C
   // 120C = 100%, 150C = 125%, 200C = 166%
-  basePower = temperature * 0.83 * prefs.learnedPower[TYPE_WHOLE_OVEN] / 100;
+  basePower = temperature * 0.83 * prefs.learnedPower / 100;
   // Adjust this number slightly based on the expected losses through the insulation. Heat losses will be higher at high temperatures
   insulationPower = map(prefs.learnedInsulation, 0, 300, map(temperature, 0, 400, 0, 20), 0);
 
