@@ -609,7 +609,7 @@ uint8_t ovenScore()
 void showLearnedNumbers()
 {
   uint16_t score, offset, result;
-  char *description[] = {"(Good)", "(Okay)", "(Bad)"};
+  const char *description[] = {"(Good)", "(Okay)", "(Bad)"};
   
   // Display the power required to keep the oven at a stable temperature
   sprintf(buffer100Bytes, "Power: %d%% ", prefs.learnedPower);
@@ -619,7 +619,7 @@ void showLearnedNumbers()
   renderBitmap(BITMAP_SMILEY_GOOD + result, offset, LINE(0)-3);
   // Add the width of the emoticon, plus some space
   offset += 45;
-  displayString(offset, LINE(0), FONT_9PT_BLACK_ON_WHITE, description[result]);
+  displayString(offset, LINE(0), FONT_9PT_BLACK_ON_WHITE, (char *) description[result]);
 
   // Display the time needed to reach the higher temperatures (inertia)
   sprintf(buffer100Bytes, "Inertia: %ds ", prefs.learnedInertia);
@@ -629,7 +629,7 @@ void showLearnedNumbers()
   renderBitmap(BITMAP_SMILEY_GOOD + result, offset, LINE(1)-3);
   // Add the width of the emoticon, plus some space
   offset += 45;
-  displayString(offset, LINE(1), FONT_9PT_BLACK_ON_WHITE, description[result]);
+  displayString(offset, LINE(1), FONT_9PT_BLACK_ON_WHITE, (char *) description[result]);
 
   // Display the insulation score
   sprintf(buffer100Bytes, "Insulation: %ds ", prefs.learnedInsulation);
@@ -639,7 +639,7 @@ void showLearnedNumbers()
   renderBitmap(BITMAP_SMILEY_GOOD + result, offset, LINE(2)-3);
   // Add the width of the emoticon, plus some space
   offset += 45;
-  displayString(offset, LINE(2), FONT_9PT_BLACK_ON_WHITE, description[result]);
+  displayString(offset, LINE(2), FONT_9PT_BLACK_ON_WHITE, (char *) description[result]);
 
   // Display the overall oven score
   displayString(10, LINE(3), FONT_9PT_BLACK_ON_WHITE, (char *) "Oven score: ");

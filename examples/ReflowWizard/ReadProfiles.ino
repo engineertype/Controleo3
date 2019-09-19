@@ -11,7 +11,8 @@ char *tokenString[NUM_TOKENS] = {(char *) "not_a_token", (char *) "name", (char 
                                  (char *) "open door", (char *) "close door", (char *) "bias", (char *) "convection fan on", (char *) "convection fan off",
                                  (char *) "cooling fan on", (char *) "cooling fan off", (char *) "ramp temperature", (char *) "element duty cycle",
                                  (char *) "wait for", (char *) "wait until above", (char *) "wait until below", (char *) "play tune", (char *) "play beep",
-                                 (char *) "door percentage", (char *) "maintain", (char *) "user taps screen"};
+                                 (char *) "door percentage", (char *) "maintain", (char *) "user taps screen", (char *) "show graph", (char *) "graph divider",
+                                 (char *) "start plotting"};
 char *tokenPtr[NUM_TOKENS];
 
 // Scan the SD card, looking for profiles
@@ -198,6 +199,7 @@ void processFile(File file)
       case TOKEN_TEMPERATURE_TARGET:
       case TOKEN_OVEN_DOOR_PERCENT:
       case TOKEN_MAINTAIN_TEMP:
+      case TOKEN_SHOW_GRAPH:
         // These should be followed by 2 numbers
         if (!getNumberFromFile(file, &numbers[0])) {
           SerialUSB.println("Error getting number 1/2");
@@ -223,6 +225,8 @@ void processFile(File file)
       case TOKEN_WAIT_FOR_SECONDS:
       case TOKEN_WAIT_UNTIL_ABOVE_C:
       case TOKEN_WAIT_UNTIL_BELOW_C:
+      case TOKEN_GRAPH_DIVIDER:
+      case TOKEN_START_PLOTTING:
         // These require 1 parameter
         if (!getNumberFromFile(file, &numbers[0])) {
           SerialUSB.println("Error getting number");
@@ -459,6 +463,15 @@ char *tokenToText(char *str, uint8_t token, uint16_t *numbers)
     case TOKEN_MAINTAIN_TEMP:
       sprintf(str, "Maintain %dC for %d seconds", numbers[0], numbers[1]);
       break;
+    case TOKEN_SHOW_GRAPH:
+      sprintf(str, "Show graph to %dC for %d seconds", numbers[0], numbers[1]);
+      break;
+    case TOKEN_GRAPH_DIVIDER:
+      sprintf(str, "Graph divider at %dC", numbers[0]);
+      break;
+    case TOKEN_START_PLOTTING:
+      sprintf(str, "Start plotting at %d seconds", numbers[0]);
+      break;
     case TOKEN_ELEMENT_DUTY_CYCLES:
       sprintf(str, "Element duty cycle %d/%d/%d", numbers[0], numbers[1], numbers[2]);
       break;
@@ -625,6 +638,7 @@ uint16_t getNextTokenFromFlash(char *str, uint16_t *num)
     case TOKEN_TEMPERATURE_TARGET:
     case TOKEN_OVEN_DOOR_PERCENT:
     case TOKEN_MAINTAIN_TEMP:
+    case TOKEN_SHOW_GRAPH:
       // This should be followed by 2 numbers
       memcpy(num, flashBuffer256Bytes + offset + 1, 4);
       offset += 5;
@@ -638,6 +652,8 @@ uint16_t getNextTokenFromFlash(char *str, uint16_t *num)
     case TOKEN_WAIT_FOR_SECONDS:
     case TOKEN_WAIT_UNTIL_ABOVE_C:
     case TOKEN_WAIT_UNTIL_BELOW_C:
+    case TOKEN_GRAPH_DIVIDER:
+    case TOKEN_START_PLOTTING:
       // These require 1 parameter
       memcpy(num, flashBuffer256Bytes + offset + 1, 2);
       offset += 3;
@@ -722,6 +738,7 @@ void dumpProfile(uint8_t profileNo)
       case TOKEN_TEMPERATURE_TARGET:
       case TOKEN_OVEN_DOOR_PERCENT:
       case TOKEN_MAINTAIN_TEMP:
+      case TOKEN_SHOW_GRAPH:
         // These should be followed by 2 numbers
         SerialUSB.println(tokenToText(buffer100Bytes, token, numbers));
         break;
@@ -734,6 +751,8 @@ void dumpProfile(uint8_t profileNo)
       case TOKEN_WAIT_FOR_SECONDS:
       case TOKEN_WAIT_UNTIL_ABOVE_C:
       case TOKEN_WAIT_UNTIL_BELOW_C:
+      case TOKEN_GRAPH_DIVIDER:
+      case TOKEN_START_PLOTTING:
         // These require 1 parameter
         SerialUSB.println(tokenToText(buffer100Bytes, token, numbers));
         break;

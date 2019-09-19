@@ -307,7 +307,12 @@ const uint8_t charsNeedingPostSpace[] = {1,0,0,0,0,0,1,0,1,1,1,1,1,1,0,1,3,1,1,1
 uint16_t preCharacterSpace(uint8_t font, char c) 
 {
   // Fixed fonts don't get any pre-character spacing
-  if (font == FONT_9PT_BLACK_ON_WHITE_FIXED || font == FONT_12PT_BLACK_ON_WHITE_FIXED)
+  if (font == FONT_12PT_BLACK_ON_WHITE_FIXED) {
+    if (c == ':')
+      return 3;
+    return 0;
+  }
+  if (font == FONT_9PT_BLACK_ON_WHITE_FIXED)
     return 0;
   if (font == FONT_22PT_BLACK_ON_WHITE_FIXED) {
     if (c == ':')
@@ -326,7 +331,12 @@ uint16_t preCharacterSpace(uint8_t font, char c)
 uint16_t postCharacterSpace(uint8_t font, char c) 
 {
   // Fixed fonts don't get any post-character spacing
-  if (font == FONT_9PT_BLACK_ON_WHITE_FIXED || font == FONT_12PT_BLACK_ON_WHITE_FIXED)
+  if (font == FONT_12PT_BLACK_ON_WHITE_FIXED) {
+    if (c == ':')
+      return 3;
+    return 0;
+  }
+  if (font == FONT_9PT_BLACK_ON_WHITE_FIXED)
     return 0;
   if (font == FONT_22PT_BLACK_ON_WHITE_FIXED) {
     if (c == ':')

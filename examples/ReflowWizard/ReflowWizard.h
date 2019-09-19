@@ -237,8 +237,11 @@ struct profiles {
 #define TOKEN_OVEN_DOOR_PERCENT      25   // Open the oven door a certain percentage
 #define TOKEN_MAINTAIN_TEMP          26   // Maintain a specific temperature for a certain duration
 #define TOKEN_TAP_SCREEN             27   // Wait for the screen to be tapped
+#define TOKEN_SHOW_GRAPH             28   // Display a graph as the reflow progresses
+#define TOKEN_GRAPH_DIVIDER          29   // Draw a temperature line on the graph
+#define TOKEN_START_PLOTTING         30   // Start plotting the graph
 
-#define NUM_TOKENS                   28   // Number of tokens to look for in the profile file on the SD card
+#define NUM_TOKENS                   31   // Number of tokens to look for in the profile file on the SD card
 #define TOKEN_NEXT_FLASH_BLOCK     0xFE   // Profile continues in next flash block 
 #define TOKEN_END_OF_PROFILE       0xFF   // Safety measure.  Flash is initialized to 0xFF, so this token means end-of-profile 
 

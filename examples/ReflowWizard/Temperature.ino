@@ -98,7 +98,7 @@ float getCurrentTemperature() {
     temperature -= ((temperature - 25.0) / 1700.0); 
 
   // More power is required at higher temperatures for the same increase
-  int maxIncrease = map(constrain(temperature, 20, 200), 20, 200, 50, 15);
+  int maxIncrease = map(constrain(temperature, 20, 200), 20, 280, 55, 33);
   if (sum > maxIncrease)
     sum = maxIncrease;
   temperature += sum / 110.0; 
