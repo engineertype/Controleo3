@@ -444,7 +444,7 @@ void displayTemperatureInHeader()
     displayString(418, 11, FONT_9PT_BLACK_ON_WHITE_FIXED, str);
   }
   else {
-    displayFixedWidthString(366, 11, str, 8, FONT_9PT_BLACK_ON_WHITE_FIXED);
+    displayFixedWidthString(351, 11, str, 9, FONT_9PT_BLACK_ON_WHITE_FIXED);
   }
 }
 

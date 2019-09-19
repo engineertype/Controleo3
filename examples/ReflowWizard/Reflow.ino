@@ -261,7 +261,7 @@ userChangedMindAboutAborting:
 
           case TOKEN_MAX_TEMPERATURE:
             // Specify the maximum temperature the oven isn't allowed to exceed
-            maxTemperature = numbers[0] < 300? numbers[0]: 300;
+            maxTemperature = numbers[0];
             break;
 
           case TOKEN_INITIALIZE_TIMER:
@@ -685,8 +685,9 @@ userChangedMindAboutAborting:
          uint16_t xpos = GRAPH_LEFT + (((float) plotSeconds)/((float) graphMaxSeconds)) * GRAPH_WIDTH;
          uint16_t ypos = GRAPH_TOP + GRAPH_HEIGHT - (GRAPH_HEIGHT * ((float) currentTemperature/(float) graphMaxTemp));
          // Allow the temperature to go over the top of the graph, just a bit
-         ypos = constrain(ypos, GRAPH_TOP-6, GRAPH_TOP + GRAPH_HEIGHT - 1);
-         tft.fillRect(xpos - 1, ypos, 3, 3, RED);
+         ypos = constrain(ypos, GRAPH_TOP - 6, GRAPH_TOP + GRAPH_HEIGHT - 1);
+         xpos = constrain(xpos, GRAPH_LEFT + 1, GRAPH_LEFT + GRAPH_WIDTH - 1);
+         tft.fillRect(xpos - 1, ypos - 1, 3, 3, RED);
        }
      }
 
