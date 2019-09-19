@@ -190,7 +190,7 @@ userChangedMindAboutAborting:
     }
 
     // Was the maximum temperature exceeded?
-    if (currentTemperature > maxTemperature) {
+    if (currentTemperature > maxTemperature && reflowPhase != REFLOW_PHASE_NEXT_COMMAND) {
       // Open the oven door to cool things off
       setServoPosition(prefs.servoOpenDegrees, 3000);
 
