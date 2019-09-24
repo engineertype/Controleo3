@@ -563,12 +563,12 @@ userChangedMindAboutAborting:
         pidTemperature += pidTemperatureDelta;
       
         // Abort if deviated too far from the required temperature
-        if (reflowPhase == REFLOW_PID && abs(pidTemperature - currentTemperature) > maxTemperatureDeviation) {
+        if (reflowPhase == REFLOW_PID && abs(pidTemperature - currentTemperature) > maxTemperatureDeviation && pidTemperature < desiredTemperature) {
           // Open the oven door
           setServoPosition(prefs.servoOpenDegrees, 3000);
           SerialUSB.println("ERROR: temperature delta exceeds maximum allowed!");
           sprintf(buffer100Bytes, "Exceeded max deviation of %d~C.", maxTemperatureDeviation);
-          sprintf(buffer100Bytes+50, "Target=%d~C, actual=%d~C", (int) pidTemperature, (int) currentTemperature);
+          sprintf(buffer100Bytes+50, "Target = %d~C, actual = %d~C", (int) pidTemperature, (int) currentTemperature);
           showReflowError(iconsX, buffer100Bytes, buffer100Bytes+50);
           reflowPhase = REFLOW_ALL_DONE;
           break;
