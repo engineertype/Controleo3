@@ -196,6 +196,7 @@ const uint8_t bakePhaseStrPosition[] = {190, 202, 198, 128, 128, 0};
 #define MAX_PROFILES                   28     // Defined by flash space
 
 #define MAX_PROFILE_DISPLAY_STR        30     // Maximum length of "display" string in profile file
+#define MAX_PROFILE_TITLE_STR          20     // Maximum length of "title" string in profile file
 
 struct profiles {
   char name[MAX_PROFILE_NAME_LENGTH+1];       // Name of the profile
@@ -240,8 +241,9 @@ struct profiles {
 #define TOKEN_SHOW_GRAPH             28   // Display a graph as the reflow progresses
 #define TOKEN_GRAPH_DIVIDER          29   // Draw a temperature line on the graph
 #define TOKEN_START_PLOTTING         30   // Start plotting the graph
+#define TOKEN_TITLE                  31   // The title that is displayed when the profile is running
 
-#define NUM_TOKENS                   31   // Number of tokens to look for in the profile file on the SD card
+#define NUM_TOKENS                   32   // Number of tokens to look for in the profile file on the SD card
 #define TOKEN_NEXT_FLASH_BLOCK     0xFE   // Profile continues in next flash block 
 #define TOKEN_END_OF_PROFILE       0xFF   // Safety measure.  Flash is initialized to 0xFF, so this token means end-of-profile 
 

@@ -41,7 +41,7 @@ redraw:
       case SCREEN_HOME: 
         // Draw the screen
         renderBitmap(BITMAP_CONTROLEO3_SMALL, 106, 5);
-        drawTouchButton(110, 80, 260, 116, BUTTON_LARGE_FONT, (char *) "Reflow");
+        drawTouchButton(110, 80, 260, 125, BUTTON_LARGE_FONT, (char *) "Profiles");
         drawTouchButton(110, 160, 260, 77, BUTTON_LARGE_FONT, (char *) "Bake");
         drawTouchButton(110, 240, 260, 182, BUTTON_LARGE_FONT, (char *) "Settings");
         renderBitmap(BITMAP_SETTINGS, 285, 252);
@@ -190,13 +190,13 @@ redraw:
         }
         
         // Draw the screen
-        displayHeader((char *) "Reflow", false);
+        displayHeader((char *) "Profiles", false);
         p = &prefs.profile[prefs.selectedProfile];
         tft.fillRect(20, LINE(0), 434, 24, WHITE);
         sprintf(buffer100Bytes, "#%d: %s", prefs.selectedProfile+1, p->name);
         displayString(20, LINE(0), FONT_9PT_BLACK_ON_WHITE, buffer100Bytes);
-        drawTouchButton(120, 100, 240, 145, BUTTON_SMALL_FONT, (char *) "Start Reflow");
-        drawTouchButton(120, 180, 240, 167, BUTTON_SMALL_FONT, (char *) "Choose Profile");
+        drawTouchButton(120, 100, 240, 130, BUTTON_SMALL_FONT, (char *) "Run Profile");
+        drawTouchButton(120, 180, 240, 170, BUTTON_SMALL_FONT, (char *) "Choose Profile");
         drawNavigationButtons(true, false);
 
         // Act on the tap
@@ -212,7 +212,7 @@ redraw:
                 
        case SCREEN_CHOOSE_PROFILE:
         // Draw the screen
-        displayHeader((char *) "Reflow Profiles", false);
+        displayHeader((char *) "Choose Profile", false);
         if (prefs.numProfiles) {
           drawIncreaseDecreaseTapTargets(ONE_SETTING_TEXT_BUTTON);
           drawTouchButton(10, 185, 210, 130, BUTTON_SMALL_FONT, (char *) "Delete");
@@ -597,9 +597,9 @@ redraw:
        case SCREEN_STATS:
         // Draw the screen
         displayHeader((char *) "Statistics", false);
-        displayString(10, LINE(0), FONT_9PT_BLACK_ON_WHITE, (char *) "Number of reflows: ");
+        displayString(10, LINE(0), FONT_9PT_BLACK_ON_WHITE, (char *) "Number of profiles run: ");
         sprintf(buffer100Bytes, "%d", prefs.numReflows);
-        displayString(243, LINE(0), FONT_9PT_BLACK_ON_WHITE, buffer100Bytes);
+        displayString(292, LINE(0), FONT_9PT_BLACK_ON_WHITE, buffer100Bytes);
         displayString(10, LINE(1), FONT_9PT_BLACK_ON_WHITE, (char *) "Number of bakes: ");
         sprintf(buffer100Bytes, "%d", prefs.numBakes);
         displayString(225, LINE(1), FONT_9PT_BLACK_ON_WHITE, buffer100Bytes);
@@ -676,6 +676,13 @@ void drawNavigationButtons(boolean addRightArrow, boolean largeTargets)
     renderBitmap(BITMAP_RIGHT_ARROW, 378, 275);
     defineTouchArea(341, top, 138, height);
   }
+}
+
+
+// Erase the screen title
+void eraseHeader()
+{
+  tft.fillRect(10, 5, 250, 32, WHITE);
 }
 
 

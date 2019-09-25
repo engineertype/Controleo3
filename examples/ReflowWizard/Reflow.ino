@@ -70,6 +70,9 @@ void reflow(uint8_t profileNo)
   if (getNextTokenFromFlash(0, &prefs.profile[profileNo].startBlock) == TOKEN_END_OF_PROFILE)
     return;
 
+  // Default the title to the old "Reflow" (the title can be overwritten in the profile)
+  eraseHeader();
+  displayHeader((char *) "Reflow", false);
 
   // Ug, hate goto's!  But this saves a lot of extraneous code.
 userChangedMindAboutAborting:
@@ -184,7 +187,7 @@ userChangedMindAboutAborting:
     
       // Abort the reflow
       SerialUSB.println("Thermocouple error:" + String(buffer100Bytes));
-      SerialUSB.println("Reflow aborted because of thermocouple error!");
+      SerialUSB.println("Profile aborted because of thermocouple error!");
       showReflowError(iconsX, (char *) "Thermocouple error:", buffer100Bytes);
       reflowPhase = REFLOW_ABORT;
     }
@@ -195,7 +198,7 @@ userChangedMindAboutAborting:
       setServoPosition(prefs.servoOpenDegrees, 3000);
 
       // Abort the reflow
-      SerialUSB.println("Reflow aborted because of maximum temperature exceeded!");
+      SerialUSB.println("Profile aborted because of maximum temperature exceeded!");
       sprintf(buffer100Bytes, "Maximum temperature of %d~C", maxTemperature);
       showReflowError(iconsX, buffer100Bytes, (char *) "was exceeded.");
       reflowPhase = REFLOW_ABORT;      
@@ -206,7 +209,7 @@ userChangedMindAboutAborting:
         // Get the next token from flash, and act on it
         token = getNextTokenFromFlash(buffer100Bytes, numbers);
 
-        if (token != TOKEN_DISPLAY)
+        if (token != TOKEN_DISPLAY && token != TOKEN_TITLE)
           SerialUSB.println(tokenToText(buffer100Bytes, token, numbers));
 
         switch (token) {
@@ -214,6 +217,12 @@ userChangedMindAboutAborting:
             // Erase the text that was there and display the text from the profile
             tft.fillRect(20, LINE(1), 459, 24, WHITE);
             displayString(20, LINE(1), FONT_9PT_BLACK_ON_WHITE, buffer100Bytes);
+            break;
+
+          case TOKEN_TITLE:
+            // Erase the text that was there and display the text from the profile
+            eraseHeader();
+            displayHeader(buffer100Bytes, false);
             break;
 
           case TOKEN_MAX_DUTY:
@@ -705,14 +714,14 @@ void drawStopDoneButton(boolean isGraphDisplayed, boolean buttonIsStop)
   if (isGraphDisplayed) {
       // Draw the button
       tft.fillRect(368, 247, 94, 26, WHITE);
-      drawButton(352, 230, 126, buttonIsStop? 87: 92, BUTTON_LARGE_FONT, buttonIsStop? (char *) "STOP" : (char *) "DONE");
+      drawButton(352, 230, 126, buttonIsStop? 87: 93, BUTTON_LARGE_FONT, buttonIsStop? (char *) "STOP" : (char *) "DONE");
       // Define the tap target (as large as possible)
       defineTouchArea(320, 200, 160, 120);
   }
   else {
       // Draw the button
       tft.fillRect(194, 247, 94, 26, WHITE);
-      drawButton(110, 230, 260, buttonIsStop? 87: 92, BUTTON_LARGE_FONT, buttonIsStop? (char *) "STOP" : (char *) "DONE");
+      drawButton(110, 230, 260, buttonIsStop? 87: 93, BUTTON_LARGE_FONT, buttonIsStop? (char *) "STOP" : (char *) "DONE");
       // Define the tap target (as large as possible)
       defineTouchArea(20, 150, 440, 170);
   }
@@ -723,11 +732,10 @@ void drawReflowAbortDialog()
 {
   drawThickRectangle(0, 100, 480, 220, 10, RED);
   tft.fillRect(10, 110, 460, 200, WHITE);
-  displayString(135, 116, FONT_12PT_BLACK_ON_WHITE, (char *) "Stop Reflow");
-  displayString(62, 155, FONT_9PT_BLACK_ON_WHITE, (char *) "Are you sure you want to stop");
-  displayString(62, 185, FONT_9PT_BLACK_ON_WHITE, (char *) "the reflow?");
+  displayString(126, 116, FONT_12PT_BLACK_ON_WHITE, (char *) "Stop Running");
+  displayString(54, 157, FONT_9PT_BLACK_ON_WHITE, (char *) "Are you sure you want to stop?");
   clearTouchTargets();
-  drawTouchButton(60, 232, 160, 72, BUTTON_LARGE_FONT, (char *) "Stop");
+  drawTouchButton(60, 232, 160, 74, BUTTON_LARGE_FONT, (char *) "Stop");
   drawTouchButton(260, 232, 160, 105, BUTTON_LARGE_FONT, (char *) "Cancel");
 }
 
@@ -798,7 +806,7 @@ void showReflowError(uint16_t iconsX, char *line1, char *line2)
   // Show the error on the screen
   drawThickRectangle(0, 90, 480, 230, 15, RED);
   tft.fillRect(15, 105, 450, 200, WHITE);
-  displayString(125, 110, FONT_12PT_BLACK_ON_WHITE, (char *) "Reflow Error!");
+  displayString(196, 110, FONT_12PT_BLACK_ON_WHITE, (char *) "Error");
   displayString(40, 150, FONT_9PT_BLACK_ON_WHITE, line1);
   displayString(40, 180, FONT_9PT_BLACK_ON_WHITE, line2);
   drawStopDoneButton(false, BUTTON_DONE);

@@ -56,7 +56,7 @@ void setup(void) {
   tft.fillScreen(WHITE);
   renderBitmap(BITMAP_CONTROLEO3, 40, 10);
   renderBitmap(BITMAP_WHIZOO, 84, 200);
-  displayString(42, 85, FONT_12PT_BLACK_ON_WHITE, (char *) "Reflow Oven Controller");
+  displayString(49, 92, FONT_12PT_BLACK_ON_WHITE, (char *) "Smart Oven Controller");
   displayString(420, 290, FONT_9PT_BLACK_ON_WHITE, (char *) CONTROLEO3_VERSION);
   tft.pokeRegister(ILI9488_DISPLAYON);
   playTones(TUNE_STARTUP);

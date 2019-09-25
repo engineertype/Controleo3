@@ -12,7 +12,7 @@ char *tokenString[NUM_TOKENS] = {(char *) "not_a_token", (char *) "name", (char 
                                  (char *) "cooling fan on", (char *) "cooling fan off", (char *) "ramp temperature", (char *) "element duty cycle",
                                  (char *) "wait for", (char *) "wait until above", (char *) "wait until below", (char *) "play tune", (char *) "play beep",
                                  (char *) "door percentage", (char *) "maintain", (char *) "user taps screen", (char *) "show graph", (char *) "graph divider",
-                                 (char *) "start plotting"};
+                                 (char *) "start plotting", (char *) "title"};
 char *tokenPtr[NUM_TOKENS];
 
 // Scan the SD card, looking for profiles
@@ -175,6 +175,17 @@ void processFile(File file)
         newProfile->noOfTokens++;
         break;
 
+      case TOKEN_TITLE:
+        // This should be followed by a string that should be displayed
+        if (!getStringFromFile(file, buffer100Bytes, MAX_PROFILE_TITLE_STR)) {
+          SerialUSB.println("Error getting title string");
+          goto tokenError;
+        }
+        // Save the title string
+        saveTokenAndStringToFlash(token, buffer100Bytes);
+        newProfile->noOfTokens++;
+        break;
+
       case TOKEN_MAX_DUTY:
       case TOKEN_ELEMENT_DUTY_CYCLES:
       case TOKEN_BIAS:
@@ -326,7 +337,7 @@ boolean getStringFromFile(File file, char *strBuffer, uint8_t maxLength)
   char c;
 
   // Empty string so far
-  memset(strBuffer, 0, 20);
+  memset(strBuffer, 0, maxLength + 1);
   
   while (file.available()) {
     c = file.read();
@@ -535,12 +546,15 @@ void saveTokenAndNumbersToFlash(uint8_t token, uint16_t *numbers, uint8_t numOfN
 }
 
 
-// Save a string to flash.  Currently, only "Display" takes a string as
+// Save a string to flash.  "Display" and "Title" take a string as
 // a parameter.  The string is saved null-terminated.
 void saveTokenAndStringToFlash(uint16_t token, char *str)
 {
   // Show the token being written for debugging
-  SerialUSB.println("Display \"" + String(str) + "\"");
+  if (token == TOKEN_DISPLAY)
+    SerialUSB.println("Display \"" + String(str) + "\"");
+  else
+    SerialUSB.println("Title \"" + String(str) + "\"");
 
   // Is this the end of the block?
   if (offsetIntoBlock > (256 - MAX_TOKEN_LENGTH)) {
@@ -623,6 +637,7 @@ uint16_t getNextTokenFromFlash(char *str, uint16_t *num)
   token = flashBuffer256Bytes[offset];
   switch (token) {
     case TOKEN_DISPLAY:
+    case TOKEN_TITLE:
       strcpy(str, (char *) flashBuffer256Bytes + offset + 1);
       offset += strlen((char *) (flashBuffer256Bytes + offset + 1)) + 2;
       break;
@@ -726,6 +741,10 @@ void dumpProfile(uint8_t profileNo)
     switch (token) {
       case TOKEN_DISPLAY:
         SerialUSB.println("Display \"" + String(buffer100Bytes) + "\"");
+        break;
+
+      case TOKEN_TITLE:
+        SerialUSB.println("Title \"" + String(buffer100Bytes) + "\"");
         break;
 
       case TOKEN_MAX_DUTY:
