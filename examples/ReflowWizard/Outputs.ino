@@ -158,7 +158,7 @@ void turnCoolingFanOn(boolean on)
 
 
 // Check to see if outputs are configured.  Prevent bake/reflow if not
-// At least 2 elements must be heating elements
+// At least one element must be a heating element
 boolean areOutputsConfigured()
 {
   uint8_t numberConfigured = 0;
@@ -166,7 +166,7 @@ boolean areOutputsConfigured()
     if (isHeatingElement(prefs.outputType[i]))
       numberConfigured++;
   }
-  if (numberConfigured >=2)
+  if (numberConfigured >=1)
     return true;
   return false;
 }
