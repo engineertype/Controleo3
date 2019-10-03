@@ -388,7 +388,7 @@ userChangedMindAboutAborting:
           // Done with measuring the oven.  Start cooling
           learningPhase = LEARNING_PHASE_START_COOLING;
           // Save all the learned values now
-          prefs.learningComplete = true;
+          prefs.learningComplete = LEARNING_DONE;
           // Force the writing of Prefs to flash
           writePrefsToFlash();
         }

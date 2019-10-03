@@ -67,6 +67,7 @@ void takeCurrentThermocoupleReading()
 
 //#define SIMULATE_TEMPERATURE
 #ifdef SIMULATE_TEMPERATURE
+#undef NUM_READINGS
 #define NUM_READINGS  40
 float getCurrentTemperature() {
   static float temperature = 24.34;

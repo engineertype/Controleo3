@@ -37,7 +37,7 @@ void reflow(uint8_t profileNo)
   }
 
   // Make sure learning has completed
-  if (prefs.learningComplete == false) {
+  if (prefs.learningComplete == LEARNING_NOT_DONE) {
     showHelp(HELP_LEARNING_NOT_DONE);
     return;
   }
@@ -603,7 +603,7 @@ userChangedMindAboutAborting:
         //   increase the power to the elements a tiny amount.  Having this any higher will create oscillations.
         // Kd is based on the learned inertia value and for the typical reflow oven it should be around 35.  Some resistive
         //   elements take a very long time to heat up and cool down so this will be a much higher value.
-        Kd = map(constrain(prefs.learnedInertia, 30, 80), 30, 80, 30, 60);
+        Kd = map(constrain(prefs.learnedInertia, 30, 100), 30, 100, 30, 75);
         // Dump these values out over USB for debugging
         SerialUSB.println("T="+String(currentTemperature)+" P="+String(pidTemperature)+" D="+String(pidTemperatureDelta)+" E="+String(thisError)+" I="+String(pidIntegral)+" D="+String(pidDerivative)+" Kd="+String(Kd));
 

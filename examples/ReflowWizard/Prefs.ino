@@ -61,21 +61,16 @@ void getPrefs()
     prefs.bakeDuration = 31;  // 1 hour
     prefs.openDoorAfterBake = BAKE_DOOR_OPEN_CLOSE_COOL;
 
+    // Assume some default learning values, close to the oven in the build guide
+    prefs.learnedPower = 13;
+    prefs.learnedInertia = 41;
+    prefs.learnedInsulation = 124;
+
     prefs.lastUsedProfileBlock = FIRST_PROFILE_BLOCK;
   }
 
   SerialUSB.println("Read prefs from block " + String(prefsToUse) + ". Seq No = " + String(prefs.sequenceNumber));
 
-/* Defaults for oven in build guide
-  prefs.learningComplete = true;
-  prefs.learnedPower[0] = 13;
-  prefs.learnedPower[1] = 32;
-  prefs.learnedPower[2] = 28;
-  prefs.learnedInertia[0] = 41;
-  prefs.learnedInertia[1] = 136;
-  prefs.learnedInertia[2] = 57;
-  prefs.learnedInsulation = 124;*/
-  
   // Remember which block was last used to save prefs
   lastPrefsBlock = prefsToUse;
 }

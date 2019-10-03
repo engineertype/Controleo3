@@ -85,7 +85,7 @@
 #define SCREEN_LINE_FREQUENCY          6
 #define SCREEN_RESET                   7
 #define SCREEN_ABOUT                   8
-#define SCREEN_STATS                   9
+#define SCREEN_PID_TUNING                9
 #define SCREEN_BAKE                    10
 #define SCREEN_EDIT_BAKE1              11
 #define SCREEN_EDIT_BAKE2              12
@@ -248,6 +248,11 @@ struct profiles {
 #define TOKEN_END_OF_PROFILE       0xFF   // Safety measure.  Flash is initialized to 0xFF, so this token means end-of-profile 
 
 #define MAX_TOKEN_LENGTH           (MAX_PROFILE_DISPLAY_STR + 5)
+
+// Learning defines
+#define LEARNING_NOT_DONE             0   // Learning has not yet been done
+#define LEARNING_DONE                 1   // Learning has been done
+#define LEARNING_BYPASSED             2   // Learning has been manually bypassed
 
 // Preferences (this can be 4Kb maximum)
 struct Controleo3Prefs {

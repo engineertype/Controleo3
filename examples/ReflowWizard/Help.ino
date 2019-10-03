@@ -20,7 +20,7 @@ void showHelp(uint8_t screen)
       displayHelpLine((char *) "Learning - Learning info");
       displayHelpLine((char *) "Reset - Touch and factory");
       displayHelpLine((char *) "Setup - Configure oven");
-      displayHelpLine((char *) "Stats - A bunch of numbers");
+      displayHelpLine((char *) "PID Tuning - Manual PID tuning");
       displayHelpLine((char *) "About - Version information");
       getTap(SHOW_TEMPERATURE_IN_HEADER);
       // Clear the area used by Help.  The screen will need to be redrawn
@@ -94,17 +94,17 @@ void showHelp(uint8_t screen)
       eraseHelpScreen(445, HELP_BOX_HEIGHT(6));
       break;
 
-    case SCREEN_STATS:
-      drawHelpBorder(445, HELP_BOX_HEIGHT(4));
-      displayHelpLine((char *) "Dude, it's just numbers!");
-      displayHelpLine((char *) "Nothing more, nothing less ..."); 
-      displayHelpLine((char *) "The kind of help you're looking for"); 
-      displayHelpLine((char *) "you ain't going to find here.  Sorry!"); 
+    case SCREEN_PID_TUNING:
+      drawHelpBorder(445, HELP_BOX_HEIGHT(5));
+      displayHelpLine((char *) "It is best that your oven learns");
+      displayHelpLine((char *) "its PID values, but you can");
+      displayHelpLine((char *) "overwite them here.");
+      displayHelpLine((char *) "Give honest ratings for oven power,");
+      displayHelpLine((char *) "inertia and insulation.");
       getTap(SHOW_TEMPERATURE_IN_HEADER);
       // Clear the area used by Help.  The screen will need to be redrawn
       eraseHelpScreen(445, HELP_BOX_HEIGHT(5));
       break;
-
 
     case SCREEN_ABOUT:
       drawHelpBorder(445, HELP_BOX_HEIGHT(7));

@@ -8,6 +8,9 @@ extern boolean drawTemperatureOnScreenNow;
 
 void setTouchTemperatureUnitChangeCallback(void (*f) (boolean));
 
+  #define NUM_POWER_SETTINGS             6
+  #define NUM_INERTIA_SETTINGS           9
+  #define NUM_INSULATION_SETTINGS        4
 
 // This is the main loop, displaying one screen after the other as the user
 // navigates between them.
@@ -16,6 +19,19 @@ void showScreen(uint8_t screen)
   profiles *p;
   uint8_t output = 0;
   boolean onOff = 0;
+  uint8_t bypassPower, bypassInertia, bypassInsulation;
+
+  uint16_t powerMap[NUM_POWER_SETTINGS+1] = {5, 10, 15, 20, 25, 30, 0};
+  uint16_t inertiaMap[NUM_INERTIA_SETTINGS+1] = {30, 35, 40, 45, 50, 60, 80, 120, 180, 0};
+  uint16_t insulationMap[NUM_INSULATION_SETTINGS+1] = {100, 130, 170, 220, 0};
+  const char* powerDescription[] = {"120~C needs 5% duty", "120~C needs 10% duty", "120~C needs 15% duty", "120~C needs 20% duty", "120~C needs 25% duty", "120~C needs 30% duty"};
+  const char* inertiaDescription[] = {"30~C rise in 30 sec", "30~C rise in 35 sec", "30~C rise in 40 sec", "30~C rise in 45 sec", "30~C rise in 50 sec", \
+                                "30~C rise in 60 sec","30~C rise in 80 sec", "30~C rise in 2 minutes", "30~C rise in 3 minutes"};
+  const char* insulationDescription[] = {"Insulation is poor", "Insulation is pretty good", "Insulation is excellent", "Like me, it is amazing!"};
+  const uint16_t powerX[NUM_POWER_SETTINGS] = {115, 108, 109, 107, 107, 107};
+  const uint16_t inertiaX[NUM_INERTIA_SETTINGS] = {128, 128, 127, 128, 128, 127, 127, 109, 110};
+  const uint16_t insulationX[NUM_INSULATION_SETTINGS] = {142, 101, 117, 111};
+  
 
   // This is the main loop, changing between the various screens.  Stay here forever ...
   while (1) {
@@ -197,7 +213,7 @@ redraw:
         displayString(20, LINE(0), FONT_9PT_BLACK_ON_WHITE, buffer100Bytes);
         drawTouchButton(120, 100, 240, 130, BUTTON_SMALL_FONT, (char *) "Run Profile");
         drawTouchButton(120, 180, 240, 170, BUTTON_SMALL_FONT, (char *) "Choose Profile");
-        drawNavigationButtons(true, false);
+        drawNavigationButtons(false, false);
 
         // Act on the tap
         switch(getTap(SHOW_TEMPERATURE_IN_HEADER)) {
@@ -206,7 +222,6 @@ redraw:
           case 2: screen = SCREEN_HOME; break;
           case 3: screen = SCREEN_HOME; break;
           case 4: showHelp(SCREEN_REFLOW); goto redraw;
-          case 5: screen = SCREEN_CHOOSE_PROFILE; break;
         }
         break;
                 
@@ -226,7 +241,7 @@ redraw:
           defineTouchArea(0, 0, 0, 0);
           drawTouchButton(40, 105, 400, 330, BUTTON_SMALL_FONT, (char *) "Read Profiles from SD Card");
         }
-        drawNavigationButtons(true, false);
+        drawNavigationButtons(false, false);
 
         while (1) {
           p = &prefs.profile[prefs.selectedProfile];
@@ -269,7 +284,6 @@ redraw:
             case 4: screen = SCREEN_REFLOW; break;
             case 5: screen = SCREEN_HOME; break;
             case 6: showHelp(SCREEN_CHOOSE_PROFILE); goto redraw;
-            case 7: screen = SCREEN_REFLOW; break;
           }
           if (screen != SCREEN_CHOOSE_PROFILE || !prefs.numProfiles)
             break;
@@ -283,7 +297,7 @@ redraw:
         drawTouchButton(10, 120, 210, 97, BUTTON_SMALL_FONT, (char *) "Learning");
         drawTouchButton(10, 195, 210, 65, BUTTON_SMALL_FONT, (char *) "Reset");
         drawTouchButton(260, 45, 210, 67, BUTTON_SMALL_FONT, (char *) "Setup");
-        drawTouchButton(260, 120, 210, 58, BUTTON_SMALL_FONT, (char *) "Stats");
+        drawTouchButton(260, 120, 210, 127, BUTTON_SMALL_FONT, (char *) "PID Tuning");
         drawTouchButton(260, 195, 210, 69, BUTTON_SMALL_FONT, (char *) "About");
         drawNavigationButtons(false, false);
 
@@ -293,7 +307,7 @@ redraw:
           case 1: screen = SCREEN_LEARNING; break;
           case 2: screen = SCREEN_RESET; break;
           case 3: output = 0; screen = SCREEN_SETUP_OUTPUTS; break;
-          case 4: screen = SCREEN_STATS; break;
+          case 4: screen = SCREEN_PID_TUNING; break;
           case 5: screen = SCREEN_ABOUT; break;
           case 6:
           case 7: screen = SCREEN_HOME; break;
@@ -570,20 +584,26 @@ redraw:
         tft.fillRect(5, 57, 470, 3, LIGHT_GREY);
 
         // Display information
-        displayString(10, 70, FONT_9PT_BLACK_ON_WHITE, (char *) "Software:");
-        displayString(128, 70, FONT_9PT_BLACK_ON_WHITE, (char *) CONTROLEO3_VERSION);
-        displayString(10, 100, FONT_9PT_BLACK_ON_WHITE, (char *) "Serial Number:");
+        displayString(20, 70, FONT_9PT_BLACK_ON_WHITE, (char *) "Software:");
+        displayString(139, 70, FONT_9PT_BLACK_ON_WHITE, (char *) CONTROLEO3_VERSION);
+        displayString(20, 100, FONT_9PT_BLACK_ON_WHITE, (char *) "Serial Number:");
         sprintf(buffer100Bytes, "%lX", *((uint32_t *) 0x0080A00C));
-        displayString(192, 100, FONT_9PT_BLACK_ON_WHITE, buffer100Bytes);
-        displayString(10, 130, FONT_9PT_BLACK_ON_WHITE, (char *) "Flash ID:");
+        displayString(202, 100, FONT_9PT_BLACK_ON_WHITE, buffer100Bytes);
+        displayString(20, 130, FONT_9PT_BLACK_ON_WHITE, (char *) "Flash ID:");
         sprintf(buffer100Bytes, "%lX", flash.readUniqueID());
-        displayString(118, 130, FONT_9PT_BLACK_ON_WHITE, buffer100Bytes);
-        displayString(10, 160, FONT_9PT_BLACK_ON_WHITE, (char *) "LCD Version:");
+        displayString(129, 130, FONT_9PT_BLACK_ON_WHITE, buffer100Bytes);
+        displayString(20, 160, FONT_9PT_BLACK_ON_WHITE, (char *) "LCD Version:");
         sprintf(buffer100Bytes, "%lX", tft.getLCDVersion());
-        displayString(169, 160, FONT_9PT_BLACK_ON_WHITE, buffer100Bytes);
-        displayString(10, 190, FONT_9PT_BLACK_ON_WHITE, (char *) "Free RAM:");
+        displayString(180, 160, FONT_9PT_BLACK_ON_WHITE, buffer100Bytes);
+        displayString(20, 190, FONT_9PT_BLACK_ON_WHITE, (char *) "Free RAM:");
         sprintf(buffer100Bytes, "%ld bytes (%ld%% free)", getFreeRAM(), getFreeRAM() / 320); // Has 32KB RAM
-        displayString(146, 190, FONT_9PT_BLACK_ON_WHITE, buffer100Bytes);
+        displayString(156, 190, FONT_9PT_BLACK_ON_WHITE, buffer100Bytes);
+        displayString(20, 220, FONT_9PT_BLACK_ON_WHITE, (char *) "Profiles run:");
+        sprintf(buffer100Bytes, "%d", prefs.numReflows);
+        displayString(169, 220, FONT_9PT_BLACK_ON_WHITE, buffer100Bytes);
+        displayString(280, 220, FONT_9PT_BLACK_ON_WHITE, (char *) "Bakes:");
+        sprintf(buffer100Bytes, "%d", prefs.numBakes);
+        displayString(363, 220, FONT_9PT_BLACK_ON_WHITE, buffer100Bytes);
 
         drawNavigationButtons(false, true);
 
@@ -594,40 +614,146 @@ redraw:
         }
         break;
  
-       case SCREEN_STATS:
+       case SCREEN_PID_TUNING:
         // Draw the screen
-        displayHeader((char *) "Statistics", false);
-        displayString(10, LINE(0), FONT_9PT_BLACK_ON_WHITE, (char *) "Number of profiles run: ");
-        sprintf(buffer100Bytes, "%d", prefs.numReflows);
-        displayString(292, LINE(0), FONT_9PT_BLACK_ON_WHITE, buffer100Bytes);
-        displayString(10, LINE(1), FONT_9PT_BLACK_ON_WHITE, (char *) "Number of bakes: ");
-        sprintf(buffer100Bytes, "%d", prefs.numBakes);
-        displayString(225, LINE(1), FONT_9PT_BLACK_ON_WHITE, buffer100Bytes);
-        // Draw a "Reset" button
-//        drawTouchButton(100, 180, 280, 65, BUTTON_SMALL_FONT, (char *) "Reset");
-        drawNavigationButtons(false, true);
+        displayHeader((char *) "Manual PID Tuning", false);
 
-        // Act on the tap
-        switch(getTap(SHOW_TEMPERATURE_IN_HEADER)) {
-//          case 0: screen = SCREEN_RESET; break;
-          case 0: screen = SCREEN_SETTINGS; break;
-          case 1: screen = SCREEN_HOME; break;
-          case 2: showHelp(SCREEN_STATS); goto redraw;
+        // Draw all the buttons
+        #define BL_LINE(x)    ((x * 60) + 60)
+        #define BL_TEXT(x)    ((x * 60) + 69)
+        // Power
+        renderBitmap(BITMAP_DECREASE_ARROW, 10, BL_LINE(0));
+        renderBitmap(BITMAP_INCREASE_ARROW, 384, BL_LINE(0));
+        defineTouchArea(0, BL_LINE(0)-10, 120, 60);
+        defineTouchArea(360, BL_LINE(0)-10, 120, 60);
+        // Inertia
+        renderBitmap(BITMAP_DECREASE_ARROW, 10, BL_LINE(1));
+        renderBitmap(BITMAP_INCREASE_ARROW, 384, BL_LINE(1));
+        defineTouchArea(0, BL_LINE(1)-10, 120, 60);
+        defineTouchArea(360, BL_LINE(1)-10, 120, 60);
+        // Insulation
+        renderBitmap(BITMAP_DECREASE_ARROW, 10, BL_LINE(2));
+        renderBitmap(BITMAP_INCREASE_ARROW, 384, BL_LINE(2));
+        defineTouchArea(0, BL_LINE(2)-10, 120, 60);
+        defineTouchArea(360, BL_LINE(2)-10, 120, 60);
+        drawNavigationButtons(false, false);
+
+        // Map existing values to the bypass values
+        bypassPower = mapValue(prefs.learnedPower, powerMap);
+        bypassInertia = mapValue(prefs.learnedInertia, inertiaMap);
+        bypassInsulation = mapValue(prefs.learnedInsulation, insulationMap);
+
+        // Display the current values
+        displayString(powerX[bypassPower], BL_TEXT(0), FONT_9PT_BLACK_ON_WHITE, (char *) powerDescription[bypassPower]);
+        displayString(inertiaX[bypassInertia], BL_TEXT(1), FONT_9PT_BLACK_ON_WHITE, (char *) inertiaDescription[bypassInertia]);
+        displayString(insulationX[bypassInsulation], BL_TEXT(2), FONT_9PT_BLACK_ON_WHITE, (char *) insulationDescription[bypassInsulation]);
+
+        while (1) {
+          // Act on the tap
+          switch(getTap(SHOW_TEMPERATURE_IN_HEADER)) {
+            case 0:
+              if (bypassPower) {
+                bypassPower--;
+                tft.fillRect(97, BL_TEXT(0), 287, 24, WHITE);
+                displayString(powerX[bypassPower], BL_TEXT(0), FONT_9PT_BLACK_ON_WHITE, (char *) powerDescription[bypassPower]);
+              }
+              break;
+            case 1:
+              if (bypassPower < NUM_POWER_SETTINGS-1) {
+                bypassPower++;
+                tft.fillRect(97, BL_TEXT(0), 287, 24, WHITE);
+                displayString(powerX[bypassPower], BL_TEXT(0), FONT_9PT_BLACK_ON_WHITE, (char *) powerDescription[bypassPower]);
+              }
+              break;
+            case 2:
+              if (bypassInertia) {
+                bypassInertia--;
+                tft.fillRect(97, BL_TEXT(1), 287, 24, WHITE);
+                displayString(inertiaX[bypassInertia], BL_TEXT(1), FONT_9PT_BLACK_ON_WHITE, (char *) inertiaDescription[bypassInertia]);
+              }
+              break;
+            case 3:
+              if (bypassInertia < NUM_INERTIA_SETTINGS-1) {
+                bypassInertia++;
+                tft.fillRect(97, BL_TEXT(1), 287, 24, WHITE);
+                displayString(inertiaX[bypassInertia], BL_TEXT(1), FONT_9PT_BLACK_ON_WHITE, (char *) inertiaDescription[bypassInertia]);
+              }
+              break;
+            case 4:
+              if (bypassInsulation) {
+                bypassInsulation--;
+                tft.fillRect(97, BL_TEXT(2), 287, 24, WHITE);
+                displayString(insulationX[bypassInsulation], BL_TEXT(2), FONT_9PT_BLACK_ON_WHITE, (char *) insulationDescription[bypassInsulation]);
+              }
+              break;
+            case 5:
+              if (bypassInsulation < NUM_INSULATION_SETTINGS-1) {
+                bypassInsulation++;
+                tft.fillRect(97, BL_TEXT(2), 287, 24, WHITE);
+                displayString(insulationX[bypassInsulation], BL_TEXT(2), FONT_9PT_BLACK_ON_WHITE, (char *) insulationDescription[bypassInsulation]);
+              }
+              break;
+            case 6: screen = SCREEN_SETTINGS; break;
+            case 7: screen = SCREEN_HOME; break;
+            case 8: showHelp(SCREEN_PID_TUNING); goto redraw;
+          }
+          if (screen != SCREEN_PID_TUNING) {
+            // See if the learned values should be overwitten
+            if (prefs.learningComplete == LEARNING_DONE) {
+              // Ask the user if these values should overwrite the learned values
+              drawThickRectangle(0, 90, 480, 230, 15, RED);
+              tft.fillRect(15, 105, 450, 200, WHITE);
+              displayString(159, 117, FONT_12PT_BLACK_ON_WHITE, (char *) "Overwrite");
+              displayString(40, 150, FONT_9PT_BLACK_ON_WHITE, (char *) "Do you want to overwrite the");
+              displayString(40, 180, FONT_9PT_BLACK_ON_WHITE, (char *) "learned values?");
+              clearTouchTargets();
+              drawTouchButton(60, 230, 160, 60, BUTTON_LARGE_FONT, (char *) "Yes");
+              drawTouchButton(260, 230, 160, 43, BUTTON_LARGE_FONT, (char *) "No");
+              if (getTap(SHOW_TEMPERATURE_IN_HEADER) == 0)
+                prefs.learningComplete = LEARNING_BYPASSED;
+            }
+
+            // Save the values if learning not done or has been bypassed
+            if (prefs.learningComplete == LEARNING_NOT_DONE || prefs.learningComplete == LEARNING_BYPASSED) {
+              // User wants to overwrite learned values
+              prefs.learningComplete = LEARNING_BYPASSED;
+              prefs.learnedPower = powerMap[bypassPower];
+              prefs.learnedInertia = inertiaMap[bypassInertia];
+              prefs.learnedInsulation = insulationMap[bypassInsulation];
+              savePrefs();
+              SerialUSB.println("Saved user-selected learned values:");
+              SerialUSB.println("Power=" + String(prefs.learnedPower) + "  Inertia=" + String(prefs.learnedInertia) + "  Insulation=" + String(prefs.learnedInsulation));
+            }
+
+            // Break out of the while loop
+            break;
+          }
         }
         break;
 
       case SCREEN_LEARNING:
         // Draw the screen
         displayHeader((char *) "Learn", false);
+        
         // Are numbers available?  If so, display them
-        if (prefs.learningComplete)
-          showLearnedNumbers();
-        else {
-          displayString(10, LINE(0), FONT_9PT_BLACK_ON_WHITE, (char *) "A learning run is necessary to measure");
-          displayString(10, LINE(1), FONT_9PT_BLACK_ON_WHITE, (char *) "the performance of the heating");
-          displayString(10, LINE(2), FONT_9PT_BLACK_ON_WHITE, (char *) "elements and insulation.  Learning");
-          displayString(10, LINE(3), FONT_9PT_BLACK_ON_WHITE, (char *) "will take around 25 minutes.");
+        switch (prefs.learningComplete) {
+          case LEARNING_NOT_DONE:
+            displayString(10, LINE(0), FONT_9PT_BLACK_ON_WHITE, (char *) "A learning run is necessary to measure");
+            displayString(10, LINE(1), FONT_9PT_BLACK_ON_WHITE, (char *) "the performance of the heating");
+            displayString(10, LINE(2), FONT_9PT_BLACK_ON_WHITE, (char *) "elements and insulation.  Learning");
+            displayString(10, LINE(3), FONT_9PT_BLACK_ON_WHITE, (char *) "will take around 25 minutes.");
+            break;
+          case LEARNING_DONE:
+            showLearnedNumbers();
+            break;
+          case LEARNING_BYPASSED:
+            displayString(10, LINE(0), FONT_9PT_BLACK_ON_WHITE, (char *) "PID tuning has been entered manually");
+            displayString(10, LINE(1), FONT_9PT_BLACK_ON_WHITE, (char *) "in the Settings menu.  You can have");
+            displayString(10, LINE(2), FONT_9PT_BLACK_ON_WHITE, (char *) "your oven learn these numbers instead.");
+            displayString(10, LINE(3), FONT_9PT_BLACK_ON_WHITE, (char *) "It will take around 25 minutes.");
+            break;
         }
+
         drawTouchButton(100, 180, 280, 164, BUTTON_SMALL_FONT, (char *) "Start Learning");
         drawNavigationButtons(false, true);
 
@@ -636,7 +762,7 @@ redraw:
           case 0: learn(); break;
           case 1: screen = SCREEN_SETTINGS; break;
           case 2: screen = SCREEN_HOME; break;
-          case 3: if (prefs.learningComplete)
+          case 3: if (prefs.learningComplete == LEARNING_DONE)
                     showHelp(SCREEN_RESULTS);
                   else
                     showHelp(SCREEN_LEARNING);
@@ -785,4 +911,18 @@ void testOutputIconAnimator()
   // Move to the next animation phase
   animationPhase = (animationPhase + 1) % 3;
 }
+
+
+// Pass in an array of increasing numbers and it will return the one that "value" is just smaller than
+uint8_t mapValue(uint16_t value, uint16_t map[])
+{
+  uint8_t i = 0;
+  while (map[i] != 0 && value > map[i])
+    i++;
+  if (map[i] == 0)
+    i--;
+//  SerialUSB.println("Value " + String(value) + " was mapped to " + String(i) + " = " + String(map[i]));
+  return i;
+} 
+
 
