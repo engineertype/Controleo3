@@ -148,6 +148,32 @@ void showHelp(uint8_t screen)
       eraseHelpScreen(450, HELP_BOX_HEIGHT(7));
       break;
 
+    case SCREEN_REFLOW:
+      drawHelpBorder(450, HELP_BOX_HEIGHT(6));
+      displayHelpLine((char *) "Execute the selected profile or");
+      displayHelpLine((char *) "choose a different one to run.");
+      displayHelpLine((char *) "Profiles are created on your PC");
+      displayHelpLine((char *) "and loaded using a SD card.  See");
+      displayHelpLine((char *) "https://whizoo.com/profiles for");
+      displayHelpLine((char *) "more information.");
+      getTap(SHOW_TEMPERATURE_IN_HEADER);
+      // Clear the area used by Help.  The screen will need to be redrawn
+      eraseHelpScreen(450, HELP_BOX_HEIGHT(6));
+      break;
+
+    case SCREEN_CHOOSE_PROFILE:
+      drawHelpBorder(455, HELP_BOX_HEIGHT(6));
+      displayHelpLine((char *) "Use the green arrows to select");
+      displayHelpLine((char *) "the profile to run.  Profiles are");
+      displayHelpLine((char *) "stored in flash on Controleo3.  They");
+      displayHelpLine((char *) "canbe loaded using a SD card.  See");
+      displayHelpLine((char *) "https://whizoo.com/profiles for");
+      displayHelpLine((char *) "more information.");
+      getTap(SHOW_TEMPERATURE_IN_HEADER);
+      // Clear the area used by Help.  The screen will need to be redrawn
+      eraseHelpScreen(455, HELP_BOX_HEIGHT(6));
+      break;
+
     case HELP_OUTPUTS_NOT_CONFIGURED:
       drawHelpBorder(430, HELP_BOX_HEIGHT(5));
       displayHelpLine((char *) "The outputs have not been");

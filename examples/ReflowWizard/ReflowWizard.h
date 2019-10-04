@@ -85,7 +85,7 @@
 #define SCREEN_LINE_FREQUENCY          6
 #define SCREEN_RESET                   7
 #define SCREEN_ABOUT                   8
-#define SCREEN_PID_TUNING                9
+#define SCREEN_PID_TUNING              9
 #define SCREEN_BAKE                    10
 #define SCREEN_EDIT_BAKE1              11
 #define SCREEN_EDIT_BAKE2              12
