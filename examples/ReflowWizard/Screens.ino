@@ -67,8 +67,6 @@ redraw:
           case 0: screen = SCREEN_REFLOW; break;
           case 1: screen = SCREEN_BAKE; break;
           case 2: screen = SCREEN_SETTINGS; break;
-          default: goto redraw;
-        
         }
         break;
 
@@ -295,7 +293,7 @@ redraw:
         displayHeader((char *) "Settings", true);
         drawTouchButton(10, 45, 210, 50, BUTTON_SMALL_FONT, (char *) "Test");
         drawTouchButton(10, 120, 210, 97, BUTTON_SMALL_FONT, (char *) "Learning");
-        drawTouchButton(10, 195, 210, 65, BUTTON_SMALL_FONT, (char *) "Reset");
+        drawTouchButton(10, 195, 210, 135, BUTTON_SMALL_FONT, (char *) "Log / Reset");
         drawTouchButton(260, 45, 210, 67, BUTTON_SMALL_FONT, (char *) "Setup");
         drawTouchButton(260, 120, 210, 127, BUTTON_SMALL_FONT, (char *) "PID Tuning");
         drawTouchButton(260, 195, 210, 69, BUTTON_SMALL_FONT, (char *) "About");
@@ -548,14 +546,33 @@ redraw:
                 
        case SCREEN_RESET:
         // Draw the screen
-        displayHeader((char *) "Reset", false);
-        drawTouchButton(100, 80, 280, 161, BUTTON_SMALL_FONT, (char *) "Factory Reset");
-        drawTouchButton(100, 160, 280, 199, BUTTON_SMALL_FONT, (char *) "Touch Calibration");
-        drawNavigationButtons(false, true);
+        displayHeader((char *) "Log & Reset", false);
+
+        // Logging
+        displayString(20, LINE(0), FONT_9PT_BLACK_ON_WHITE, (char *) "Log time & temperature:");
+        renderBitmap(BITMAP_DECREASE_ARROW, 40, LINE(1));
+        renderBitmap(BITMAP_INCREASE_ARROW, 354, LINE(1));
+        defineTouchArea(0, LINE(1)-10, 150, 60);
+        defineTouchArea(330, LINE(1)-10, 150, 60);
+
+        // Reset and touch calibration
+        displayString(20, 150, FONT_9PT_BLACK_ON_WHITE, (char *) "Reset:");
+        drawTouchButton(20, 180, 180, 134, BUTTON_SMALL_FONT, (char *) "All Settings");
+        drawTouchButton(215, 180, 247, 201, BUTTON_SMALL_FONT, (char *) "Touch Calibration");
+        drawNavigationButtons(false, false);
 
         // Act on the tap
-        switch(getTap(SHOW_TEMPERATURE_IN_HEADER)) {
-          case 0:
+        while (1) {
+          displayString(prefs.logToSDCard? 140:179, LINE(1)+10, FONT_9PT_BLACK_ON_WHITE, prefs.logToSDCard? (char *) "Write to SD card" : (char *) "No logging");
+
+          switch(getTap(SHOW_TEMPERATURE_IN_HEADER)) {
+            case 0:
+            case 1:
+              prefs.logToSDCard = 1 - prefs.logToSDCard;
+              tft.fillRect(140, LINE(1)+10, 200, 24, WHITE);
+              savePrefs();
+              continue;
+            case 2:
               drawThickRectangle(0, 90, 480, 230, 15, RED);
               tft.fillRect(15, 105, 450, 200, WHITE);
               displayString(126, 110, FONT_12PT_BLACK_ON_WHITE, (char *) "Factory Reset");
@@ -568,11 +585,15 @@ redraw:
                 factoryReset(true);
                 NVIC_SystemReset();
               }
-              break;
-          case 1: CalibrateTouchscreen(); break;
-          case 2: screen = SCREEN_SETTINGS; break;
-          case 3: screen = SCREEN_HOME; break;
-          case 4: showHelp(SCREEN_RESET); goto redraw;
+              tft.fillRect(0, 90, 480, 230, WHITE);
+              goto redraw;
+            case 3: CalibrateTouchscreen(); break;
+            case 4: screen = SCREEN_SETTINGS; break;
+            case 5: screen = SCREEN_HOME; break;
+            case 6: showHelp(SCREEN_RESET); goto redraw;
+          }
+          // Clear this screen and go to the new screen (redraw this one if touch calibration was tapped)
+          break;
         }
         break;
                 

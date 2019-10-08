@@ -69,7 +69,7 @@ void getPrefs()
     prefs.lastUsedProfileBlock = FIRST_PROFILE_BLOCK;
   }
 
-  SerialUSB.println("Read prefs from block " + String(prefsToUse) + ". Seq No = " + String(prefs.sequenceNumber));
+  SerialUSB.println("Read prefs from block " + String(prefsToUse) + ". Seq No=" + String(prefs.sequenceNumber) + " size=" + String(sizeof(prefs)));
 
   // Remember which block was last used to save prefs
   lastPrefsBlock = prefsToUse;

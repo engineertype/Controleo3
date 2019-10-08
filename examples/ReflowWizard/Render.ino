@@ -102,7 +102,7 @@ uint16_t renderBitmapFromMicrocontrollerFlash(uint16_t bitmapNumber, uint16_t x,
 uint16_t displayString(uint16_t x, uint16_t y, uint8_t font, char *str) {
   boolean firstChar = true, printData = true;
   uint16_t start = x;
-  if (true /*strlen(str) < 10 && (strstr(str, "~") || strstr(str, ":")*/)
+  if (true /*strlen(str) < 10 && (strstr(str, "~") || strstr(str, ":"))*/)
     printData = false;
   else {
     SerialUSB.print("Width of [");

@@ -82,16 +82,17 @@ void showHelp(uint8_t screen)
       break;
 
     case SCREEN_RESET:
-      drawHelpBorder(445, HELP_BOX_HEIGHT(6));
+      drawHelpBorder(445, HELP_BOX_HEIGHT(7));
+      displayHelpLine((char *) "When running a profile, data");
+      displayHelpLine((char *) "can be written to a log file");
+      displayHelpLine((char *) "for further analysis on a PC.");
       displayHelpLine((char *) "A factory reset will erase all");
-      displayHelpLine((char *) "settings, and return them to"); 
-      displayHelpLine((char *) "their default values.  Stored");
-      displayHelpLine((char *) "reflow profiles are also erased.");
-      displayHelpLine((char *) "You can recalibrate the touchscreen"); 
-      displayHelpLine((char *) "if you feel it isn't accurate."); 
+      displayHelpLine((char *) "settings, and return them to their");
+      displayHelpLine((char *) "default values.  Stored profiles");
+      displayHelpLine((char *) "are also erased.");
       getTap(SHOW_TEMPERATURE_IN_HEADER);
       // Clear the area used by Help.  The screen will need to be redrawn
-      eraseHelpScreen(445, HELP_BOX_HEIGHT(6));
+      eraseHelpScreen(445, HELP_BOX_HEIGHT(7));
       break;
 
     case SCREEN_PID_TUNING:
@@ -207,7 +208,38 @@ void showHelp(uint8_t screen)
       displayHelpLine((char *) "the \"Learning\" button.");
       getTap(SHOW_TEMPERATURE_IN_HEADER);
       break;
-    
+
+    case HELP_NO_SD_CARD:
+      drawHelpBorder(430, HELP_BOX_HEIGHT(6));
+      displayHelpLine((char *) "The logging of time and");
+      displayHelpLine((char *) "temperature data to the SD");
+      displayHelpLine((char *) "card has been enabled but no");
+      displayHelpLine((char *) "SD card is present.");
+      displayHelpLine((char *) "Please insert a SD card or disable");
+      displayHelpLine((char *) "logging in the Settings menu.");
+      getTap(SHOW_TEMPERATURE_IN_HEADER);
+      break;
+
+    case HELP_BAD_FORMAT:
+      drawHelpBorder(430, HELP_BOX_HEIGHT(6));
+      displayHelpLine((char *) "The logging of time and");
+      displayHelpLine((char *) "temperature data to the SD");
+      displayHelpLine((char *) "card has been enabled but the");
+      displayHelpLine((char *) "SD card appears to be incorrectly");
+      displayHelpLine((char *) "formatted.  Please format it using");
+      displayHelpLine((char *) "FAT16 or FAT32.");
+      getTap(SHOW_TEMPERATURE_IN_HEADER);
+      break;
+
+    case HELP_CANT_WRITE_TO_SD_CARD:
+      drawHelpBorder(430, HELP_BOX_HEIGHT(4));
+      displayHelpLine((char *) "The logging of time and");
+      displayHelpLine((char *) "temperature data to the SD");
+      displayHelpLine((char *) "card has been enabled but there's");
+      displayHelpLine((char *) "a problem writing to it.");
+      getTap(SHOW_TEMPERATURE_IN_HEADER);
+      break;
+
     case SCREEN_RESULTS:
       drawHelpBorder(440, HELP_BOX_HEIGHT(8));
       displayHelpLine((char *) "Power: The duty cycle of");

@@ -103,6 +103,9 @@
 // Help
 #define HELP_OUTPUTS_NOT_CONFIGURED    80
 #define HELP_LEARNING_NOT_DONE         81
+#define HELP_NO_SD_CARD                82
+#define HELP_BAD_FORMAT                83
+#define HELP_CANT_WRITE_TO_SD_CARD     84
 
 // Outputs
 #define NUMBER_OF_OUTPUTS              6
@@ -254,7 +257,7 @@ struct profiles {
 #define LEARNING_DONE                 1   // Learning has been done
 #define LEARNING_BYPASSED             2   // Learning has been manually bypassed
 
-// Preferences (this can be 4Kb maximum)
+// Preferences (this can be 4Kb maximum).  Ideally keep it at 1228 bytes
 struct Controleo3Prefs {
   uint32_t  sequenceNumber;                   // Prefs are rotated between 4 blocks in flash, each 4K in size
   uint16_t  versionNumber;                    // Version number of these prefs
@@ -287,7 +290,9 @@ struct Controleo3Prefs {
   uint8_t   selectedProfile;                  // The reflow profile that was used last
   profiles profile[MAX_PROFILES];             // Array of profile information
   uint16_t  lastUsedProfileBlock;             // The last block used to store a profile.  Keep cycling them to reduce flash wear
+  uint8_t   logToSDCard;                      // Write reflow data to the SD card
+  uint16_t  logNumber;                        // Log file sequential number
 
-  uint8_t   spare[100];                       // Spare bytes that are initialized to zero.  Aids future expansion
+  uint8_t   spare[96];                        // Spare bytes that are initialized to zero.  Aids future expansion
 } prefs;
 

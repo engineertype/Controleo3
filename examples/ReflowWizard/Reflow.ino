@@ -11,11 +11,13 @@
 #define GRAPH_HEIGHT   150 
 #define GRAPH_WIDTH    300
 
+#define CLOSE_LOG_FILE   if (logFileOpen) { logFile.close();  logFileOpen = false; }
+
 // Perform a reflow
 // Stay in this function until the reflow is done or canceled
 void reflow(uint8_t profileNo)
 {
-  uint32_t reflowTimer = 0, countdownTimer = 0, plotSeconds = 0, lastLoopTime = millis();
+  uint32_t reflowTimer = 0, countdownTimer = 0, plotSeconds = 0, secondsFromStart = 0, lastLoopTime = millis();
   uint8_t counter = 0;
   uint8_t reflowPhase = REFLOW_PHASE_NEXT_COMMAND;
   double currentTemperature = 0, pidTemperatureDelta = 0, pidTemperature = 0;
@@ -23,12 +25,12 @@ void reflow(uint8_t profileNo)
   boolean isOneSecondInterval = false, displayGraph = false;
   uint16_t iconsX, i, token = NOT_A_TOKEN, numbers[4], maxDuty[4], currentDuty[4], bias[4];
   boolean isPID = false, incrementTimer = true;
-  boolean abortDialogIsOnScreen = false;
+  boolean abortDialogIsOnScreen = false, logFileOpen = false;
   uint16_t maxTemperatureDeviation = 20, maxTemperature = 260, desiredTemperature = 0, Kd, maxBias;
   int16_t pidPower;
   float pidPreviousError = 0, pidIntegral = 0, pidDerivative, thisError;
   uint16_t graphMaxTemp = 0, graphMaxSeconds = 0;
-
+  File logFile;
   
   // Verify the outputs are configured
   if (areOutputsConfigured() == false) {
@@ -41,6 +43,44 @@ void reflow(uint8_t profileNo)
     showHelp(HELP_LEARNING_NOT_DONE);
     return;
   }
+
+  // Is SD card logging of time/temperature enabled?
+  if (prefs.logToSDCard) {
+    // Is the SD card inserted?
+    if (digitalRead(A0) == HIGH) {
+      showHelp(HELP_NO_SD_CARD);
+      return;
+    }
+
+    // Open the log file on the SD card
+    // Try initializing twice.  Necessary if good card follows bad one
+    if (!SD.begin() && !SD.begin()) {
+      showHelp(HELP_BAD_FORMAT);
+      return;
+    }
+    SerialUSB.println("SD Card initialized");
+
+    // Open the log file
+    sprintf(buffer100Bytes, "Log%05d.csv", prefs.logNumber);
+    logFile = SD.open(buffer100Bytes, FILE_WRITE);
+    if (!logFile) {
+      SerialUSB.println("Unable to open logging file " + String(buffer100Bytes));
+      showHelp(HELP_CANT_WRITE_TO_SD_CARD);
+      return;
+    }
+
+    // Log file has been successfully opened.  Write the name of the profile to the log file
+    logFileOpen = true;
+    SerialUSB.println("Opened logging file " + String(buffer100Bytes));
+    logFile.println(prefs.profile[profileNo].name);
+
+    // Increment the file number (we don't care about wrap-around from 65536 to 0)
+    prefs.logNumber++;
+    savePrefs();
+  }
+
+  SerialUSB.println("Running profile: " + String(prefs.profile[profileNo].name));
+  SerialUSB.println("Power=" + String(prefs.learnedPower) + "  Inertia=" + String(prefs.learnedInertia) + "  Insulation=" + String(prefs.learnedInsulation));
 
   // Calculate the centered position of the heating and fan icons (icons are 32x32)
   iconsX = 240 - (numOutputsConfigured() * 20) + 4;  // (2*20) - 32 = 8.  8/2 = 4
@@ -67,8 +107,10 @@ void reflow(uint8_t profileNo)
   maxBias = 100;
 
   // Set up the flash reads to start with the first block of this profile
-  if (getNextTokenFromFlash(0, &prefs.profile[profileNo].startBlock) == TOKEN_END_OF_PROFILE)
+  if (getNextTokenFromFlash(0, &prefs.profile[profileNo].startBlock) == TOKEN_END_OF_PROFILE) {
+    CLOSE_LOG_FILE;
     return;
+  }
 
   // Default the title to the old "Reflow" (the title can be overwritten in the profile)
   eraseHeader();
@@ -157,6 +199,13 @@ userChangedMindAboutAborting:
     // Dump data to the debugging port
     if (counter == 5 && reflowPhase != REFLOW_ALL_DONE)
       DumpDataToUSB(reflowTimer, currentTemperature, 0, 0);
+    // Log data to the SD card
+    if (counter == 10 && logFileOpen) {
+      sprintf(buffer100Bytes, "%ld,%d.%02d", secondsFromStart, (uint16_t) currentTemperature, (uint16_t) ((currentTemperature - (uint16_t) currentTemperature) * 100));
+      logFile.println(buffer100Bytes);
+      // Flush the buffer (write to SD card) frequenty to prevent stutters when writing big blocks of data
+      logFile.flush();
+    }
 
     // Determine if this is on a 1-second interval
     isOneSecondInterval = false;
@@ -168,6 +217,7 @@ userChangedMindAboutAborting:
       if (incrementTimer && reflowPhase < REFLOW_ALL_DONE)
         reflowTimer++;
       plotSeconds++;
+      secondsFromStart++;
     }
     
     // Read the current temperature
@@ -642,6 +692,7 @@ userChangedMindAboutAborting:
 
       case REFLOW_ALL_DONE:
         // Nothing to do here.  Just waiting for user to tap the screen
+        CLOSE_LOG_FILE;
         break;
         
       case REFLOW_ABORT:
@@ -649,6 +700,8 @@ userChangedMindAboutAborting:
         setOvenOutputs(ELEMENTS_OFF, CONVECTION_FAN_OFF, COOLING_FAN_OFF);
         // Close the oven door
         setServoPosition(prefs.servoClosedDegrees, 1000);
+        // Stop logging
+        CLOSE_LOG_FILE;
         // All done!
         return;
     }
