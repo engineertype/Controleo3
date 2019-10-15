@@ -190,17 +190,17 @@ userChangedMindAboutAborting:
     lastLoopTime += 20;
 
     // Try not to update everything in the same 20ms time slice
-    // Update the reflow timer
-    if (counter == 1 && !abortDialogIsOnScreen)
-      displayReflowDuration(reflowTimer, displayGraph);
     // Update the temperature
-    if (counter == 2)
+    if (counter == 1)
       displayTemperatureInHeader();
     // Dump data to the debugging port
     if (counter == 5 && reflowPhase != REFLOW_ALL_DONE)
       DumpDataToUSB(reflowTimer, currentTemperature, 0, 0);
+    // Update the reflow timer
+    if (counter == 10 && !abortDialogIsOnScreen)
+      displayReflowDuration(reflowTimer, displayGraph);
     // Log data to the SD card
-    if (counter == 10 && logFileOpen) {
+    if (counter == 20 && logFileOpen) {
       sprintf(buffer100Bytes, "%ld,%d.%02d", secondsFromStart, (uint16_t) currentTemperature, (uint16_t) ((currentTemperature - (uint16_t) currentTemperature) * 100));
       logFile.println(buffer100Bytes);
       // Flush the buffer (write to SD card) frequenty to prevent stutters when writing big blocks of data
