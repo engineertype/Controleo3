@@ -25,7 +25,7 @@ In this folder are:
 To install the Controleo3 library, please refer to:  
 http://arduino.cc/en/Guide/Libraries or http://www.whizoo.com/update
 
-##Reflow Wizard
+## Reflow Wizard
 
 * 1.0  Initial public release. (21 August 2017)  
 * 1.1  Bug fixes and features (9 September 2017)
@@ -56,6 +56,7 @@ http://arduino.cc/en/Guide/Libraries or http://www.whizoo.com/update
 
 
 Peter Easton
+
 whizoo.com
 
 
