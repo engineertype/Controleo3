@@ -3,7 +3,7 @@
 // Build a reflow oven: https://whizoo.com
 
 
-#define CONTROLEO3_VERSION             "1.5a" // "v1.5"
+#define CONTROLEO3_VERSION             "1.5"
 
 
 // Fonts
