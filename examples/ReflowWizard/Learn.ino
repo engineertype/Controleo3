@@ -269,9 +269,10 @@ userChangedMindAboutAborting:
           if (learningIntegral > 30) {
             learningIntegral = 0;
             // Increase duty cycles
-            if (learningDutyCycle < 100)
+            if (learningDutyCycle < 100) {
               learningDutyCycle++;
               SerialUSB.println("Under-temp. Increasing duty cycle");
+            }
           }
         }
         
